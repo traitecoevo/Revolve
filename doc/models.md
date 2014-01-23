@@ -115,17 +115,19 @@ variable $P_i$. The models assume all occupied patches are vacated each
 year (i.e. annual plants), although an extension to perennial case is
 considered [see @geritz_evolutionarily_1995]. Except for seed size, different types are assumed to be identical in all other characteristics.
 
-If all patches are linked by dispersal with no spatial patterning then
-the distribution of seeds among sites will follow a Poisson process,
-with a rate parameter $y_i$ determined by the mean number of seeds per
-patch produced by species i. The probability of $n$ seeds landing in any
-given patch is then
+If all patches are linked by dispersal with no spatial patterning
+(i.e., the island model) then the distribution of seeds among sites
+will follow a Poisson process, with a rate parameter $y_i$ determined
+by the mean number of seeds per patch produced by species i. The
+probability of $n$ seeds landing in any given patch is then
 
-\begin{equation}\label{eq:Poiss} p(n; y_i) = \frac{e^{-y_i}y_i^n}{n!},\end{equation}
+\begin{equation}\label{eq:Poiss} p(n; y_i) = \frac{e^{-y_i}y_i^n}{n!} \sim \mathrm{Poisson}(y_i),\end{equation}
 
 while the equilibrium number of patches occupied is given by
 
 \begin{equation}P^* = 1 - e^{-y_i}.\end{equation}
+
+(i.e., $1 - p(0;n_i)$).
 
 ### Fitness calculations
 
@@ -141,7 +143,7 @@ and competitive phases be $s(x^\prime)$ and $g(x^\prime,x)$ respectively, where 
 
 Survival during the frequency-independent phase is modelled as
 
-\begin{equation}s(x) = \max \{0, 1-2e^{-\beta m}\}\end{equation}
+\begin{equation}s(x) = \max \{0, 1-2e^{-\beta x}\}\end{equation}
 
 which gives as monotonic increasing curve with increasing $x$, approaching
 towards 1 for large $x$.
@@ -151,7 +153,7 @@ patch is operating to determine survival during the competitive phase.
 
 The probability of a seed with strategy $x^\prime$ establishing within a patch is given by
 
-\begin{equation}\frac{c(x^\prime)}{c(x^\prime)+k_1c(x_1)+\ldots+k_Nc(x_N)},\end{equation}
+\begin{equation}\frac{c(x^\prime)}{c(x^\prime)+k_1c(x_1)+\cdots+k_Nc(x_N)},\end{equation}
 
 where $k_1, \ldots, k_N$ is the number of seeds arriving and $c(m)$ is the competitive ability for each strategy. Competitive ability is given by the equation
 
@@ -163,7 +165,7 @@ establishment over the entire range of possible resident densities and
 their probability of occurrence. Using equation \ref{eq:Poiss} for the probability of drawing $x$ seeds of species $i$, given its
 density $y_i$, we obtain
 
-\begin{equation}\label{eq:g} g(x^\prime,x,y)= \sum_{k_1=0}^\infty\ldots \sum_{k_N=0}^\infty  \frac{c(x_i)}{c(x_i)+k_1c(x_1)+\ldots+k_Nc(x_N)} \times \frac{y_1^{k_1}\ldots y_N^{k_N}}{k_1!\ldots k_N!}e^{-y_1-\ldots-y_N}.\end{equation}
+\begin{equation}\label{eq:g} g(x^\prime,x,y)= \sum_{k_1=0}^\infty\cdots \sum_{k_N=0}^\infty  \frac{c(x^\prime)}{c(x^\prime)+k_1c(x_1)+\cdots+k_Nc(x_N)} \times p(k_1; y_1) \times \cdots \times p(k_N; y_n).\end{equation}
 
 ### Parameter values
 
