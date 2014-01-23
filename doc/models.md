@@ -67,7 +67,7 @@ where
 Note that the birth rate $r$ is trait- and density- independent, so competition comes only via effects on death rate. The carrying capacity of type $x^\prime$ individuals is given by
 
 \begin{equation} \label{eq:DD99-K}
-K(x^\prime)=K_0 \exp \left(-\frac{x^2}{2\sigma_K^2}\right),\end{equation}
+K(x^\prime)=K_0 \exp \left(-\frac{{x^\prime}^2}{2\sigma_K^2}\right),\end{equation}
 
 while competition kernel is given by
 

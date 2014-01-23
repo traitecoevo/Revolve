@@ -1,3 +1,4 @@
 S3method("names<-",parameters)
 S3method(names,parameters)
+export(make_dieckmann_1999)
 export(make_parameters)
