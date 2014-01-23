@@ -1,6 +1,8 @@
 Revolve
 =======
 
+[![Build Status](https://travis-ci.org/dfalster/Revolve.png?branch=master)](https://travis-ci.org/dfalster/Revolve)
+
 Adaptive Dynamics toolkit for R
 
 Here we are trying to achive two things:
