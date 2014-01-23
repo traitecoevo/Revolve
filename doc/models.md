@@ -51,11 +51,9 @@ demographically stable resident population.
 
 ## Dieckmann and Doebeli 1999 -- Evolution under competition for a limiting resource
 
-@dieckmann_origin_1999 present a general model of evolution where there is competition for a limiting resource and the strength of competition between individuals declines with phenotypic distance according to a Gaussian function.
+@dieckmann_origin_1999 present a general model of trait evolution where there is competition for a limiting resource and the strength of competition between individuals declines with phenotypic distance according to a Gaussian function:
 
-### 1-D version
-
-The 1D version of this model considers evolution of an ecological trait influencing competitive interactions,
+Fitness is calculated as difference between births and deaths, given by
 
 \begin{equation} \label{eq:DD99-fit1}  \hat{f}(x^\prime,x,y) = r\left(1- \frac{\sum_{i=1}^N y_i \, C(x^\prime,x_i)} {K(x^\prime)} \right),\end{equation}
 
@@ -79,6 +77,10 @@ C(x^\prime,x)=\exp\left(-\frac{(x^\prime-x)^2}{2\sigma_C^2}\right).
 
 The parameters $\sigma_k$ and $\sigma_C$ are scaling factors for the resource
 distribution and competition kernels respectively, while $K_0$ is a parameter for maximum population density.
+
+### Parameters
+
+The values used in the paper are $r=1$, $K_0=500$, $\sigma_K=1$, and $\sigma_C=0.4$, with $\sigma_K$ and $\sigma_C$ varied across a range from 0-2 in figure 4.
 
 ## Gertiz 1999 -- Evolution of seed size with size-asymmetric competition for safe sites
 
