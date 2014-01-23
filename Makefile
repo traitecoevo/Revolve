@@ -18,4 +18,9 @@ check:
 test:
 	make -C inst/tests
 
+DEVTOOLS_DOCUMENT=devtools::document(roclets=c('namespace', 'rd'))
+document:
+	@mkdir -p man
+	Rscript -e "library(methods); ${DEVTOOLS_DOCUMENT}"
+
 .PHONY: all install doc clean check
