@@ -58,3 +58,19 @@ res <- as.data.frame(do.call(rbind, res))
 res[] <- sapply(res, as.numeric)
 
 plot(y ~ t, res, type="o")
+
+
+x <- seq(-2,2, length.out=50)
+plot(x, m$capacity(x), type="o", xlab = "trait")
+
+
+par(mfrow=c(1,5), oma=rep(4,4))
+  for(x_res in seq(-2,0, length.out=5)){
+    plot(x, m$fitness(x, x_res,  m$capacity(x_res)), type="l", ann=FALSE, ylim=c(-1,1))
+    points(x_res,0, pch=16, col="red")
+    abline(h=0, col="grey", lty="dashed")
+  }
+title("Change in fitness landscape approaching branching point", outer=TRUE)
+mtext("Trait value",1, outer=TRUE, line=0)
+mtext("Fitness",2, outer=TRUE, line=0)
+
