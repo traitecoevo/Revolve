@@ -16,13 +16,14 @@ make_dieckmann_1999 <- function(r=1, K_0=500, s2_C=0.16, s2_K=1) {
 
   ## Fitness calculation:
   fitness <- function(x_new, x, y)
-    r * (1 - sum(y * competition(x_new, x)) / capacity(x_new))
+    r * (1 - colSums(y * competition(x_new, x)) / capacity(x_new))
   ## Model details:
-  competition <- function(x_new, x) {
-    if (length(x_new) > 1 && length(x) > 1) # (TODO)
-      stop("Only one of x_new or x can be vector (at present)")
-    exp(- (x_new - x)^2 / (2 * s2_C))
-  }
+  ##
+  ## Returns a matrix with length(x) rows and length(n_new) columns;
+  ## so reading down the column 'i' tells you about the competition
+  ## experienced by mutant strategy x_new[i].
+  competition <- function(x_new, x)
+    exp(- outer(x, x_new, "-")^2 / (2 * s2_C))
   capacity <- function(x_new)
     K_0 * exp(- x_new^2 / (2 * s2_K))
 

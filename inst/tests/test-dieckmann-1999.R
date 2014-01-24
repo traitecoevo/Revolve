@@ -42,24 +42,40 @@ test_that("Components work", {
   expect_that(yy, equals(p$K * gaussian(xx, 0, p$s2_K)))
 
   expect_that(m$competition(xx, 0),
-              equals(gaussian(xx, 0, p$s2_C)))
+              equals(rbind(gaussian(xx, 0, p$s2_C))))
   expect_that(m$competition(0, xx),
-              equals(gaussian(0, xx, p$s2_C)))
-  set.seed(1)
+              equals(cbind(gaussian(0, xx, p$s2_C))))
+  set.seed(10)
   xp <- rnorm(1)
   expect_that(m$competition(xp, xx),
-              equals(gaussian(xp, xx, p$s2_C)))
+              equals(cbind(gaussian(xp, xx, p$s2_C))))
 
-  expect_that(m$competition(xx, xx), throws_error())
+  ## Multiple response case:
+  expect_that(m$competition(xx, xx),
+              equals(outer(xx, xx, gaussian, p$s2_C)))
+  zz <- sample(xx, 10)
+  expect_that(m$competition(xx, zz),
+              equals(outer(zz, xx, gaussian, p$s2_C)))
+  expect_that(m$competition(zz, xx),
+              equals(outer(xx, zz, gaussian, p$s2_C)))
 
   ## Now, try this on an established population:
-  set.seed(1)
+  set.seed(100)
   x <- rnorm(5)
   y <- runif(length(x)) * m$capacity(x)
 
-  w.cmp <- p$r * (1 - sum(y * gaussian(xp, x, p$s2_C)) /
-                  (p$K_0 * gaussian(0, xp, p$s2_K)))
+  w.cmp <- p$r * (1 - sum(y * m$competition(xp, x)) / m$capacity(xp))
   expect_that(m$fitness(xp, x, y), equals(w.cmp))
+
+  ## Multiple mutants at once:
+  set.seed(100)
+  xp2 <- rnorm(2)
+
+  w2.cmp1 <- sapply(xp2, m$fitness, x, y)
+  w2.cmp2 <- p$r * (1 - colSums(y * m$competition(xp2, x)) / m$capacity(xp2))
+
+  expect_that(w2.cmp1, equals(w2.cmp2))
+  expect_that(m$fitness(xp2, x, y), equals(w2.cmp1))
 })
 
 ## For a single case at equilibrium density, the growth rate should be
