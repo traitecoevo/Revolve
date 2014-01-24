@@ -80,7 +80,73 @@ distribution and competition kernels respectively, while $K_0$ is a parameter fo
 
 ### Parameters
 
-The values used in the paper are $r=1$, $K_0=500$, $\sigma_K=1$, and $\sigma_C=0.4$, with $\sigma_K$ and $\sigma_C$ varied across a range from 0-2 in figure 4.
+The values used in the paper are $r=1$, $K_0=500$, $\sigma_K=1$, and $\sigma_C=0.4$, with $\sigma_K$ and $\sigma_C$ varied across a range from 0-2 in figure 4. Mutations are generated according at rate $\mu = 0.001$, so total mutations per step is given by $r \, y_i \, \mu$. [NB: do we want to set mutation rate according to birth rate or total fitness ? Paper uses birth rate, but not all models have birth and death functions so perhaps take according to fitness?]
+
+### History
+
+According to @ito_new_2007, the model encapsulated in eqs. \ref{eq:DD99-fit1}-\ref{eq:DD99-C} has *"been investigated by many authors, including Christiansen and Fenchel (1977), Christiansen and Loeschcke (1980), Slatkin (1980), Case (1981), Seger (1985), Taper and Case (1985), Vincent et al. (1993), Metz et al. (1996), Doebeli (1996a),Drossel and McKane (2000), Day (2000), Ackermann and Doebeli (2004), and Doebeli et al. (2007)."*
+
+## @ito_new_2007 -- Multi-trait evolution with competition for several limiting resources
+
+@ito_new_2007 suggest an extension of the model from @dieckmann_origin_1999 to include a second resource and trait dimension. This model corresponds to the situation where there is [what shaped resource distribution - bivariate Gaussian?]. @vukics_speciation_2003 also investigate a similar extension. In principle these model could be extended to an arbitrary number of dimensions and resources.
+
+Fitness in the multi-resource model is calculated as per eq. \ref{eq:DD99-fit1}, but note that $x^\prime$ and $x$ are now multi trait vectors. Multivariate extensions of eqs. \ref{eq:DD99-C}-\ref{eq:DD99-K} are then:
+
+\begin{equation} \label{eq:DD99-K2}
+K(x^\prime)=K_0 \exp \left(-\sum_{i}\frac{{{x_i}^\prime}^2}{2{\sigma_{Ki}}^2} \right),\end{equation}
+
+and
+
+\begin{equation} \label{eq:DD99-C2}
+C(x^\prime,x)=\exp\left(-\sum_{i=1} \frac{({x_i}^\prime-x_i)^2}{2{\sigma_{Ci}}^2}\right), \end{equation}
+
+where $i$ corresponds to the number of resources and trait dimensions.
+
+### Parameters
+
+Unknown because did not @ito_new_2007 did not implement.
+
+## @ito_new_2007 -- Multi-trait evolution with directional selection
+
+@ito_new_2007 extend the model from @dieckmann_origin_1999 to include a second trait dimension, but rather than treating the second trait in same fashion as first -- i.e. based on some stable resource distribution,  @ito_new_2007 set the second trait up to allow continuous directional selection.
+
+In this model, fitness a new term corresponding to directional selection on either birth or death rate in the $j^{th}$ trait is added to the claulcation of fitness from eq. \ref{eq:DD99-fit1}:
+
+\begin{equation} \label{eq:ID07-fit}  \hat{f}(x^\prime,x,y) = r\left(1- \frac{\sum_{i=1}^N y_i \, C(x^\prime,x_i)} {K(x^\prime)} \right) + d_0 \, D_j(x^\prime,x), \end{equation}
+
+where $d_0$ is a constant influencing the strength of directional selection,
+
+\begin{equation} \label{eq:ID07-D}   D_j(x^\prime,x) = x_j^\prime - \bar{x_j} \end{equation}
+
+gives the difference between the $j^{th}$ trait and the community for mutant average:
+
+\begin{equation} \label{eq:ID07-xj}  \bar{x_j} = \frac{\sum_{i=1}^N x_ij \, y_i}{\sum_{i=1}^N y_i} \end{equation}
+
+In this formulation, directional selection in the   $j^{th}$ trait continues indefinitely.
+
+### Parameters
+
+General parameters used $K_0=100,000$, $r=1$,  $\mu=10^{-5}$.
+
+Resource distribution:
+
+- medium: $\sigma_k = 0.2, \sigma_C = 0.15$
+- wide: $\sigma_k = 0.2, \sigma_C = 0.07$
+
+Directional selection:
+
+- absent: $d_0=0$
+- weak: $d_0=0.5$
+- strong: $d_0=10$ (did not show results)
+
+
+### Results
+
+The model produces three qualitatively different outcomes (see Fig 1), although the second type is only described verbally:
+
+1. No directional selection: When $d_0=0$, the model produces a stable distribution of types, where number of types in each dimension depends on the width of resource distribution compared to the competition kernel
+2. Strong directional selection: When directional selection in trait y is very strong, evolution in trait y is so swift that it prevents diversification in trait x. After the population has converged to x=0, it thus merely keeps evolving along this line in response to the directional selection pressure in y.
+3. Weak directional selection: "When directional selection in trait y is finite and sufficiently weak, the initial branching in trait x is followed by a pattern of recurrent adaptive radiations and extinctions. This occurs because stochastic effects —- resulting from mutations as well as from the demography of finite populations -- cause the spontaneous breaking of the initial symmetry between the two diverging lineages. In particular, the population sizes of the two lineages will never be exactly equal. Since the more abundant lineage can evolve faster, it will move ahead in the race of responding to the weak directional selection pressure in trait y, thus increasing its relative fitness in terms of trait y......The evolutionary interplay between these two lineages causes the asymmetry in their population sizes to grow and their trait values y to diverge. This positive feedback continues until the posterior lineage becomes extinct. The positive feedback may be intensified by an additional effect: once the anterior lineage becomes sufficiently dominant, it experiences so little competition from the posterior lineage that it reverses its direction of gradual evolution in trait x, thus pushing the posterior lineage toward lower carrying capacity and accelerating its demise."
 
 ## Gertiz 1999 -- Evolution of seed size with size-asymmetric competition for safe sites
 
@@ -172,5 +238,12 @@ density $y_i$, we obtain
 $\alpha \, R=6$, range - 0 -15
 
 $\beta \, R=25$, range - 0-60
+
+# Extensions
+
+Things that can be added to any model
+
+- make quantitative traits depend on number of alleles, e.g. @dieckmann_origin_1999
+- add neutral marker trait that influences mating probability, e.g. @dieckmann_origin_1999. This allows for assortative mating and linkage disequilibrium to develop; encourages disruptive selection.
 
 # References
