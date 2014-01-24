@@ -49,3 +49,18 @@ names.parameters <- function(x, ...)
 ##' @S3method names<- parameters
 `names<-.parameters` <- function(x, value)
   stop("Cannot set names of a parameters object")
+
+##' Bin x into a grid, where x may have different densities.
+##'
+##' @title Bin Values
+##' @param x Vector of locations
+##' @param y Vector of densities/counts along x
+##' @param grid Grid over which to bin the values.
+##' @return A vector of length \code{length(grid) - 1} being the
+##' number of things in each interval.
+##' @author Rich FitzJohn
+##' @export
+to_grid <- function(x, y, grid) {
+  i <- findInterval(x, grid, rightmost.closed=TRUE)
+  unname(sapply(split(y, factor(i, seq_len(length(grid)-1))), sum))
+}
