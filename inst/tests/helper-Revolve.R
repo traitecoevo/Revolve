@@ -1,5 +1,6 @@
 library(testthat)
 library(Revolve)
+library(numDeriv)
 
 is_greater_than <- function(value) {
   function(actual)
