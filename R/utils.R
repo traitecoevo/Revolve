@@ -64,3 +64,88 @@ to_grid <- function(x, y, grid) {
   i <- findInterval(x, grid, rightmost.closed=TRUE)
   unname(sapply(split(y, factor(i, seq_len(length(grid)-1))), sum))
 }
+
+##' Build a function that steps the system through one
+##' generation. Order of events is: (1) resolve fitness (2) introduce
+##' mutants.
+##'
+##' @title Step System Forward in Time
+##' @param fitness Function for computing fitness.  Must take
+##' arguments \code{x_new} (phenotypes to compute fitness for),
+##' \code{x} (resident phenotypes) and \code{y} (resident abundances)
+##' and return the per-capita growth rate (g).  The population will step
+##' forward with an Euler step, so that the new \code{y} will be
+##' \code{y + y * g * dt}.
+##' @param mutation Function for generating mutants.  Must take
+##' arguments \code{traits} (resident phenotypes) and \code{mutants}
+##' (the number of mutants to generate, for each phenotype).  See
+##' \code{\link{make_mutation}}, which generates a useful function.
+##' @param dt Size of the time step
+##' @param mu Mutation rate.  On average there will be \code{mu*dt*y}
+##' mutations, with the actual number drawn from Poisson
+##' distribution.
+##' @param y_initial Abundance at which to introduce new mutants.
+##' @return A Function that moves the system forward in time; it takes
+##' a list with elements \code{x} (traits), \code{y} (abundances) and
+##' \code{t} (time) and returns a list with these updated to the next
+##' steps.
+##' @author Rich FitzJohn
+##' @export
+make_step <- function(fitness, mutation, dt, mu, y_initial) {
+  function(sys) {
+    # births/time/individual * individuals * time -> births
+    dy <- fitness(sys$x, sys$x, sys$y) * dt * sys$y
+    # mutations/time/individual * individuals * time -> mutation
+    mutants <- mutation(sys$x, rpois(length(sys$y), mu * dt * sys$y))
+
+    sys$y <- sys$y + dy
+    if (length(mutants) > 0) {
+      sys$x <- c(sys$x, mutants)
+      sys$y <- c(sys$y, rep_len(y_initial, length(mutants)))
+    }
+    sys$t <- sys$t + dt
+
+    sys
+  }
+}
+
+##' Cleanup phenotypes that have dropped below a threshold abundance
+##'
+##' @title Cleanup Rare Phenotypes
+##' @param eps Abundance below which species are considered extinct.
+##' @author Rich FitzJohn
+##' @export
+make_cleanup <- function(eps) {
+  function(sys) {
+    keep <- sys$y >= eps
+    if (!all(keep)) {
+      sys$x <- sys$x[keep]
+      sys$y <- sys$y[keep]
+    }
+    sys
+  }
+}
+
+##' Run a system forward in time.
+##'
+##' @title Run System
+##' @param sys a list with elements \code{x} (traits), \code{y} (abundances) and
+##' \code{t} (time)
+##' @param n_steps The number of steps to run the system for.
+##' @param step Step function (see \code{\link{make_step}})
+##' @param cleanup Cleanup function (optional - by default do no cleanup)
+##' @param print_every Interval at which to print some progress information
+##' @author Rich FitzJohn
+##' @export
+run <- function(sys, n_steps, step, cleanup=identity, print_every=0) {
+  res <- vector("list", length(n_steps+1))
+  res[[1]] <- sys
+  for (i in seq_len(n_steps)) {
+    if (print_every > 0 && i %% print_every == 0)
+      message(i)
+    sys <- step(sys)
+    sys <- cleanup(sys)
+    res[[i+1]] <- sys
+  }
+  res
+}

@@ -2,7 +2,8 @@
 \alias{make_dieckmann_1999}
 \title{Dieckmann & Doebeli 1999}
 \usage{
-make_dieckmann_1999(r = 1, K_0 = 500, s2_C = 0.16, s2_K = 1)
+  make_dieckmann_1999(r = 1, K_0 = 500, s2_C = 0.16,
+    s2_K = 1)
 }
 \arguments{
   \item{r}{Intrinsic birth rate}
@@ -15,16 +16,16 @@ make_dieckmann_1999(r = 1, K_0 = 500, s2_C = 0.16, s2_K = 1)
   \item{s2_K}{Width of the resource distribution kernel}
 }
 \value{
-TBD...
+  TBD...
 }
 \description{
-Model implementing "On the origin of species by sympatric
-speciation" by Dieckmann & Doebeli, Nature 1999.
+  Model implementing "On the origin of species by sympatric
+  speciation" by Dieckmann & Doebeli, Nature 1999.
 }
 \details{
-Still a test case only; much to come.
+  Still a test case only; much to come.
 }
 \author{
-Rich FitzJohn
+  Rich FitzJohn
 }
 
