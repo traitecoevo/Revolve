@@ -1,8 +1,16 @@
+% Revolve: An adaptive dynamics toolkit for R
+% Daniel Falster; Rich FitzJohn
+
+\newpage
 
 # Background
 
 
-One-dimensional models
+The theory of adaptive dynamics offers a conceptual framework for understanding how phenotypic selection, driven by the selective
+forces that arise through density- and frequency-dependent interactions
+and population dynamics, shapes biological communities, in particular the distribution of quantitative traits [@geritz_evolutionarily_1998; @dieckmann_dynamical_1996; @dieckmann_can_1997; @dieckmann_adaptive_2007].  One direction for research in adaptive dynamics is to identify the ecological scenarios that allow for multiple species to coexist in a competitive context. The emphasis here is on the processes giving rise to fitness. A second direction for research is to describe the algorithms for modelling trait evolution. Several types of model can be identified , according to the different assumptions made about the evolutionary process, specifically the frequency and size of mutations. For the most part, these two directions are orthogonal: any given ecological model can be implemented under a range of assembly models.
+
+The goal of this package is to provide functions for implementing a range of commonly used analysis techniques in adaptive dynamics research. These techniques are illustrated using a number of ecological models taken from published research. This includes some one-dimensional models (i.e. single trait evolving):
 
 * @geritz_evolutionarily_1998 -- Evolution of seed size in multi-patch model with local adaptation
 * @geritz_evolutionary_1999 --  Evolution of seed size with size-asymmetric competition for safe sites [results depend on starting conditions]
@@ -13,16 +21,24 @@ One-dimensional models
 * @dieckmann_origin_1999 --  Evolution under competition for a limiting resource
 * @leimar_limiting_2013 --  Evolution of continuous traits with different competition kernels
 * @dandrea_revising_2013 --  Evolution of seed size under fecundity-tolerance trade-off
+* @scheffer_self-organized_2006 -- Evolution under competition for a limiting resource
+* @leimar_limiting_2013 -- Limiting similarity, species packing, and the shape of competition kernels;
 
-### 2D
+also some multi-dimensional models (two or more traits evolving):
 
-* @dieckmann_origin_1999 --  Evolution under competition for a limiting resource and assortative mating
-- @ito_new_2007 -- Mulit-trait evolution with disruptive and directional selection
+* @dieckmann_origin_1999 --  Evolution under competition for a limiting resource with assortative mating
+- @ito_new_2007 -- Multi-trait evolution with disruptive and directional selection.
+
+Throughout all of what follows, we assume that a fitness function can be specified, giving the long-term rate of increase for a rare mutant in a resident community. Specifying this function implies two key assumptions.
+
+1. Population sizes are sufficiently large and well mixed. The effect of this assumption is to remove stochastic elements from the population dynamics, which approach their deterministic limits in large populations.
+2. The external (abitoic) environment is constant.
+
+When stochastic population dynamics are of interest a finite size individual-based simulation model will be required.
 
 # Definitions
 
-Consider a community of $N$ species potentially differing from one
-another in $K$ quantitative traits. Let:
+Consider a community of $N$ species potentially differing from one another in $K$ quantitative traits. Let:
 
 - $N$ be the number of species
 - $K$ be the number of quantitative traits
@@ -37,17 +53,139 @@ and their corresponding abundances
 
 \begin{equation}y=(y_{1},\ldots,y_{N}).\end{equation}
 
-Define $\hat{f}(x^\prime,x, y)$ to be a scalar-valued function giving
+Define $f(x^\prime,x, y)$ to be a scalar-valued function giving
 the per capita rate of increase (fitness) for individuals with trait values
 $x^\prime \in \Re^K$ growing in an environment shaped by resident
 community $(x,y)$.
 
-Let $\bar{y}$ be the value of $y$ satisfying $\hat{f}(x_{i},x,\bar{y})=0 \, \forall i$. Thus when $y = \bar{y}$, residents are at their demographic attractors (time-scale separation). We then write
-$f(x^\prime,x) = \hat{f}(x^\prime,x, \bar{y})$ for the invasion
-fitness of the mutant, i.e. per capita rate of increase in a
+Let $\bar{y}$ be the value of $y$ satisfying
+
+\begin{equation}\label{ybar}  \hat{f}(x_{i},x,\bar{y})=0 \, \forall i. \end{equation}
+
+Thus when $y = \bar{y}$, residents are at their demographic attractors (time scale separation). We then write
+\begin{equation}\hat{f}(x^\prime,x) = f(x^\prime,x, y)\bigg|_{y=\bar{y}}.\end{equation}
+for the invasion fitness of the mutant, i.e. per capita rate of increase in a
 demographically stable resident population.
 
-# Model catalogue
+# Assembly algorithms
+
+A number of assembly algorithms can be used with any given fitness function. The models are distinguished by the frequency and size of mutations, as illustrated in Fig. \ref{fig:D07-F1}. Here we adopt the terminology of @dieckmann_adaptive_2007.
+
+If mutations occur frequently, evolution proceeds via **polymorphic and stochastic** model of trait evolution (Fig. [fig:D07-F1]a). In this model, polymorphic distributions of trait values stochastically drift and diffuse through selection and mutation.
+
+![**Models of adaptive dynamics**
+, from @dieckmann_adaptive_2007. Panel (a) illustrates the individual-based birth-death-mutation process (polymorphic and stochastic), panel (b) shows an evolutionary random walk (monomorphic and stochastic), panel (c) represents the gradient-ascent model (monomorphic and deterministic, described by the canonical equation of adaptive dynamics), and panel (d) depicts an evolutionary reaction- diffusion model (polymorphic and deterministic).\label{fig:D07-F1}](images/Dieckmann2007-Fig1.pdf)
+
+When mutations are rare, ecological dynamics proceed much faster than evolutionary dynamics, allowing a formal time-scale separation between evolutionary and ecological processes (Fig. [fig:D07-F2]). Thus, whenever a successful mutation arises, it is allowed to spread before any additional mutations appear. This leads to the **monomorphic** model, so called because each species is represented by a single strategy. The term 'oligomorhpic' is also used to describe communities with several species (*oligo-*, containing a relatively small number of units).
+
+Another assumption about the size of mutation then distinguishes between
+two modes of adaptive evolution that can be handled using the
+monomorphic model. If mutations are large, evolution proceeds as directed 'random walk' through trait space (panel b in Fig. \ref{fig:D07-F1}); the **monomorphic and stochastic** model.
+
+On the other hand, if mutations are small, then evolution can be
+modelled deterministically via gradient ascent, as a standard non-linear, dynamical system (panel c in Fig. \ref{fig:D07-F1}). This is the **monomorphic and deterministic** model.
+
+![**Formal relations between the models of adaptive dynamics**
+, from @dieckmann_adaptive_2007. The four classes of model are shown as rounded boxes, and the three derivations as arrows. Arrow labels highlight key assumptions.\label{fig:D07-F2}](images/Dieckmann2007-Fig2.pdf)
+
+## Polymorphic and stochastic model
+
+The polymorphic and stochastic model involves the fewest assumptions and code. Clearly, a stochastic approach is required whenever the key assumption of the deterministic model - that mutations are small - is violated. A stochastic approach may also be preferred in high dimensional systems, with many traits or
+species, as solving of demographic attractors becomes more difficult. At a more fundamental level, stochastic approaches are inevitably more realistic, e.g. mutations are not rare in real communities.
+
+### Numerical approach
+
+The following algorithm can be used to step a stochastic system:
+
+1.  Initialise the phenotypes $x=\left(x_{1}, \ldots, x_{i}, \ldots, x_{N}\right)$ for $N$ resident lineages at time $t=0$ (set $N=1$ for an initially monomorphic community). Define the extinction threshold $\epsilon$.
+
+2.  \label{ps:Restart}
+3.  ....
+4.  .....ncrease $N$ by 1 and set $x_{N+1} = x_i^\prime$ .  Return to step \ref{ps:Restart}.
+
+## Monomorphic systems
+
+In many cases want to solve for the demographic attractor of the resident community, i.e. find values of $y$ satisfying equation \ref{ybar}. Biologically, we are assuming that mutations are rare and that a residents approach their deomgraphic attractor before a new mutation arises.
+
+### Numerical approach
+The following techniques may be applied to find  $\bar{y}$:
+
+1.  **Analytical**: ideal, but only possible in some models and then only with single resident.
+2.  **Multi-dimensional root solving**: This approach works well only if you have good initial guess for the solution. In systems with many species, obtaining a good initial guess is problematic.
+3.  **Iteration**: Using a difference equation, $y_{i,t+1} = y_{i,t} \times 10^{\hat{f}(x_i,x, y_{t})}$, iterate the population until stable. This approach is fail proof, but a large number of iterations may be required to reach stability, especially when fitness is close to zero.
+4.  **Solve system of ODEs**: Express problem as $\frac{\partial}{dt} y_{i} = y_{i} \hat{f}(x_i,x, y)$, then advance the system using an adaptive ODE solver. Depending on the system a stiff solver may perform better, this in turn requires calculation of jacobian.
+
+For the root solving and ODE approach, it may be preferable to make $\log y$ the state variable, as this prevents negative population sizes being generated by the solver.
+
+## Monomorphic and stochastic model
+
+This model assumes infrequent but large mutations; evolution then follows a directed random walk through trait space [@dieckmann_dynamical_1996; @dieckmann_adaptive_2007].  Mathematically, the model is described by a master equation for the probability density $P(x,t)$ of realising a given phenotypic
+distribution $x$ at time $t$ [see @dieckmann_dynamical_1996]. The shape of the fitness landscape influences the probability per unit time that a species transitions from its current trait value to another trait value in that direction. Evolution within each species then follows a Markovian *trait substitution sequence*. Mutational processes interact with the selective forces generated by ecological interaction to determine evolutionary trajectories.
+
+### Numerical approach
+
+The most efficient way to implement the monomorphic stochastic model is
+using Gillespie’s minimal process method
+[@gillespie_general_1976; @dieckmann_dynamical_1996]. Rather than
+stepping the system over a given time interval and considering any
+transitions that may occur in that time period, the system is stepped
+between successive events by drawing the next invading mutant trait
+value and the time at which the invasion occurs from appropriate
+distributions. The method is founded on the idea that with a given
+mutation rate, the distribution of waiting times follows an exponential
+distribution. Appropriate algorithms are given by
+@dieckmann_dynamical_1996, @ito_new_2007, @brannstrom_emergence_2010.
+
+The following algorithm is adapted from @ito_new_2007:
+
+1.  Initialise the phenotypes
+    $x=\left(x_{1}, \ldots, x_{i}, \ldots, x_{N}\right)$ for $N$
+    resident lineages at time $t=0$ (set $N=1$ for an initially
+    monomorphic community). Define the extinction threshold $\epsilon$.
+
+2.  \label{ms:Restart} Calculate equilibrium population sizes
+    $y=\bar{y}$ satisfying
+    $\hat{f}(x_{i},x,y)=0 \, \forall i$.
+
+3.  \label{ms:extinct} Check whether $\bar{y}_{i} < \epsilon$ $\forall i$; if
+    so, delete phenotype $x_i$ and decrease $N$ accordingly. Return to
+    step \ref{ms:Restart}.
+
+4.  \label{ms:Weight} Calculate the rate $w_i =\mu_i \bar{y}_i(x) $ for the
+    emergence of a mutant from phenotype $x_i$, the immigration rate
+    $w_{N+1} =I$, and the total mutation rate $w=\sum_{i=1}^{N+1} w_i$.
+
+5.  \label{ms:newMutant} Choose lineage $i$ with probability $w_i/w$.
+
+6.  Choose a new phenotype $x_i^\prime$ according to the mutation
+    probability density $M(x_i^\prime, x_{i}, \sigma(x_{i}))$ if
+    $i \in (1,N)$, or in the case of immigration, $M_I(x_i^\prime)$.
+    Update time $t$ by adding $\Delta t =-(1/w)\ln p$, where
+    $0\leq p \leq 1$ is a uniformly distributed random number.
+
+7.  Calculate the invasion fitness of the new
+    phenotype and check if it can invade. The probability of successful invasion depends on the magnitude of $f$ -- however, even if $f$ is positive the mutant may fail because of stochastic demographic effects. For models with continuous-time birth-death process, the probability the mutant succeeds is given $p = max(f,0)/b$ [@dieckmann_dynamical_1996]. Estimating a similar probability in structured populations is no trivial task. As a rough approximation, the probability the mutant succeeds might be estimated as $p = \max(\log(B),0)/log(R)$, where $R$ and $B$ are, respectively, the expected number of offspring and the expected number of offspring reaching maturity produced by an individual reaching maturity. Choose a uniformly distributed random number $0\leq p_r \leq 1$. If
+    $p_r > p$ the mutant fails to invade, return to step
+    \label{ms:newMutant}. Otherwise, increase $N$ by 1 and set $x_{N+1} = x_i^\prime$ .  Return to step \ref{ms:Restart}.
+
+The above recipe estimates the waiting time between successive mutants,
+and then asks whether such mutants can invade. It is also possible to
+estimate the waiting time between successful mutants, using an extension
+of this model [see @brannstrom_emergence_2010].
+Although superior in many ways, this revised technique requires an
+integration over the fitness landscape, which is costly in systems with
+more than a single trait and is to be avoided.
+
+## Monomorphic and deterministic model
+
+Canonical equation....
+
+## Other variants
+
+- can extend to include genomes of diallelic loci [e.g. @dieckmann_origin_1999]see [issue here](https://github.com/dfalster/Revolve/issues/1)
+- also allow for assortative mating of neutral marker trait [e.g. @dieckmann_origin_1999]
+
+# A catalogue of ecological models
 
 ## Dieckmann and Doebeli 1999 -- Evolution under competition for a limiting resource
 
@@ -155,19 +293,11 @@ dynamics leading to a stable polymorphism in seed size among plants
 competing for safe sites (i.e. models falling with patch dynamics
 frame-work). In brief:
 
--   @geritz_competition_1988 develops a model for competition and life-history
-    evolution in safe-sites. Conditions for demographic equilibrium,
-    invasion fitness and multi-specie coexistence are derived.
+-   @geritz_competition_1988 develops a model for competition and life-history evolution in safe-sites. Conditions for demographic equilibrium, invasion fitness and multi-specie coexistence are derived.
 
--   @geritz_evolutionarily_1995 found that small-scale spatial variation in seedling
-    density favors the evolution of variation in seed size within
-    individual plants if competition among seedlings is sufficiently
-    asymmetric. The range of seed sizes is predicted to increase with
-    adult resource status, reduction in juvenile mortality and more-even
-    seed dispersal.
+-   @geritz_evolutionarily_1995 found that small-scale spatial variation in seedling density favors the evolution of variation in seed size within individual plants if competition among seedlings is sufficiently asymmetric. The range of seed sizes is predicted to increase with adult resource status, reduction in juvenile mortality and more-even seed dispersal.
 
--   @geritz_evolutionary_1999 extends @geritz_competition_1988 and @geritz_evolutionarily_1995 models to incorporate differing     degrees of size-assymetric competition and juvenile mortality. Generalizes scenarios leading to progressively higher degrees of
-    polymorphism.
+-   @geritz_evolutionary_1999 extends @geritz_competition_1988 and @geritz_evolutionarily_1995 models to incorporate differing     degrees of size-assymetric competition and juvenile mortality. Generalizes scenarios leading to progressively higher degrees of polymorphism.
 
 
 ### Safe-sites framework
