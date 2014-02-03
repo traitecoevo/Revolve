@@ -109,6 +109,46 @@ make_step <- function(fitness, mutation, dt, mu, y_initial) {
   }
 }
 
+##' @export
+##' @rdname make_step
+make_step_continuous <- function(fitness, mutation, dt, mu, y_initial) {
+  step_deterministic <- make_step_deterministic(fitness)
+  function(sys) {
+    y0 <- sys$y
+    sys <- step_deterministic(sys, dt)
+
+    # Work out mutational input from the integrated number of
+    # individuals (quick and dirty) via trapezium rule times the
+    # mutation rate (per time).
+    # mutations/time/individual * individuals * time -> mutation
+    mutants <- mutation(sys$x,
+                        rpois(length(y0), mu * dt * (y0 + sys$y)/2))
+    if (length(mutants) > 0) {
+      sys$x <- c(sys$x, mutants)
+      sys$y <- c(sys$y, rep_len(y_initial, length(mutants)))
+    }
+    sys
+  }
+}
+
+##' @export
+##' @rdname make_step
+##' @importFrom deSolve lsoda
+make_step_deterministic <- function(fitness) {
+  ## NOTE: This will actually work with non-scalar dt, which is
+  ## probably not desirable given that we write to sys directly.
+  function(sys, dt) {
+    derivs <- function(t, y, ...)
+      list(fitness(sys$x, sys$x, y) * y)
+    t0 <- sys$t
+    t1 <- t0 + dt
+    tmp <- lsoda(sys$y, c(t0, t1), derivs)[-1,,drop=FALSE]
+    sys$t <- unname(tmp[,1])
+    sys$y <- unname(tmp[,-1])
+    sys
+  }
+}
+
 ##' Cleanup phenotypes that have dropped below a threshold abundance
 ##'
 ##' @title Cleanup Rare Phenotypes

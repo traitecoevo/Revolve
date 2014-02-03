@@ -2,8 +2,7 @@
 \alias{run}
 \title{Run System}
 \usage{
-  run(sys, n_steps, step, cleanup = identity,
-    print_every = 0)
+run(sys, n_steps, step, cleanup = identity, print_every = 0)
 }
 \arguments{
   \item{sys}{a list with elements \code{x} (traits),
@@ -21,9 +20,9 @@
   progress information}
 }
 \description{
-  Run a system forward in time.
+Run a system forward in time.
 }
 \author{
-  Rich FitzJohn
+Rich FitzJohn
 }
 

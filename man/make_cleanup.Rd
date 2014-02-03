@@ -2,17 +2,17 @@
 \alias{make_cleanup}
 \title{Cleanup Rare Phenotypes}
 \usage{
-  make_cleanup(eps)
+make_cleanup(eps)
 }
 \arguments{
   \item{eps}{Abundance below which species are considered
   extinct.}
 }
 \description{
-  Cleanup phenotypes that have dropped below a threshold
-  abundance
+Cleanup phenotypes that have dropped below a threshold
+abundance
 }
 \author{
-  Rich FitzJohn
+Rich FitzJohn
 }
 

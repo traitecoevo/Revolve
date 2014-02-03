@@ -2,7 +2,7 @@
 \alias{make_parameters}
 \title{Utility for Parameter Handling}
 \usage{
-  make_parameters(defaults, where = new.env())
+make_parameters(defaults, where = new.env())
 }
 \arguments{
   \item{defaults}{List of default parameter values.
@@ -13,17 +13,17 @@
   (so access is only via get/set).}
 }
 \value{
-  An object of class \code{parameters}
+An object of class \code{parameters}
 }
 \description{
-  Utility for taking care of getting/setting/validating
-  parameters.
+Utility for taking care of getting/setting/validating
+parameters.
 }
 \details{
-  Eventually I'll add a hook here for checking that
-  parameters are allowable, for setting ranges, etc.
+Eventually I'll add a hook here for checking that
+parameters are allowable, for setting ranges, etc.
 }
 \author{
-  Rich FitzJohn
+Rich FitzJohn
 }
 

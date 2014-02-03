@@ -1,8 +1,14 @@
 \name{make_step}
 \alias{make_step}
+\alias{make_step_continuous}
+\alias{make_step_deterministic}
 \title{Step System Forward in Time}
 \usage{
-  make_step(fitness, mutation, dt, mu, y_initial)
+make_step(fitness, mutation, dt, mu, y_initial)
+
+make_step_continuous(fitness, mutation, dt, mu, y_initial)
+
+make_step_deterministic(fitness)
 }
 \arguments{
   \item{fitness}{Function for computing fitness.  Must take
@@ -29,17 +35,17 @@
   mutants.}
 }
 \value{
-  A Function that moves the system forward in time; it
-  takes a list with elements \code{x} (traits), \code{y}
-  (abundances) and \code{t} (time) and returns a list with
-  these updated to the next steps.
+A Function that moves the system forward in time; it takes
+a list with elements \code{x} (traits), \code{y}
+(abundances) and \code{t} (time) and returns a list with
+these updated to the next steps.
 }
 \description{
-  Build a function that steps the system through one
-  generation. Order of events is: (1) resolve fitness (2)
-  introduce mutants.
+Build a function that steps the system through one
+generation. Order of events is: (1) resolve fitness (2)
+introduce mutants.
 }
 \author{
-  Rich FitzJohn
+Rich FitzJohn
 }
 
