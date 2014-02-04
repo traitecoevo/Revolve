@@ -31,33 +31,24 @@ set.seed(1)
 res1 <- run(sys0, 3000, step1, cleanup)
 res2 <- run(sys0, 3000, step2, cleanup)
 
-discretise <- function(res, xr, nx=101, sample=10) {
-  xx <- seq(xr[1], xr[2], length.out=nx)
-
-  j <- seq(1, length(res), by=sample)
-  mat <- sapply(j, function(i)
-                 to_grid(res[[i]]$x, res[[i]]$y, xx))
-  mat[mat == 0] <- NA
-
-  list(x=xx, t=sapply(res[j], "[[", "t"), y=mat)
-}
-
 ## Plot the community over time; binned into
-xr <- c(-1, 1)
 cols <- grey((32:0)/32)
 col <- "#00000055"
 
-img1 <- discretise(res1, xr)
-img2 <- discretise(res2, xr)
+img1 <- discretise(res1)
+img2 <- discretise(res2)
+xr <- range(img1$x, img2$x)
 
 sys1 <- res1[[length(res1)]]
 sys2 <- res2[[length(res2)]]
 
 op <- par(mfrow=c(3, 2), mar=c(2.6, 3.1, .5, .5), oma=c(2.1, 2.1, 0, 0))
 ## Traits and population density through time:
-image(img1$x, img1$t, img1$y, col=cols, ylab="", las=1); box()
+image(img1$x, img1$t, img1$y, col=cols, ylab="", xlim=xr,
+      xaxs="r", las=1); box()
 mtext("Time", 2, 3, xpd=NA)
-image(img2$x, img2$t, img2$y, col=cols, ylab="", las=1); box()
+image(img2$x, img2$t, img2$y, col=cols, ylab="",
+      xaxs="r", las=1); box()
 
 ## Resident types and their densities:
 plot(sys1, xlim=xr, pch=19, col=col, ylab="", las=1)
@@ -65,13 +56,15 @@ mtext("Number", 2, 3, xpd=NA)
 plot(sys2, xlim=xr, pch=19, col=col, ylab="", las=1)
 
 ## Fitness of the resident types:
-plot(img1$x, m1$fitness(img1$x, sys1$x, sys1$y), type="l", ylab="", las=1)
+plot(img1$x, m1$fitness(img1$x, sys1$x, sys1$y), type="l", ylab="",
+     xlim=xr, las=1)
 points(sys1$x, m1$fitness(sys1$x, sys1$x, sys1$y), col=col)
 abline(h=0)
 mtext("Fitness", 2, 3, xpd=NA)
 mtext("Trait", 1, 3, xpd=NA)
 
-plot(img2$x, m2$fitness(img2$x, sys2$x, sys2$y), type="l", ylab="", las=1)
+plot(img2$x, m2$fitness(img2$x, sys2$x, sys2$y), type="l", ylab="",
+     xlim=xr, las=1)
 points(sys2$x, m2$fitness(sys2$x, sys2$x, sys2$y), col=col)
 abline(h=0)
 mtext("Trait", 1, 3, xpd=NA)
@@ -80,8 +73,8 @@ par(op)
 ## Here is the fitness as a single phenotype approaches the branching point.
 op <- par(mfrow=c(1,5), oma=c(2.5, 2.5, 2, 0), mar=c(2.1, 2.1, .5, .5))
 for (x_res in seq(-2, 0, length.out=5)) {
-  plot(x, m$fitness(x, x_res,  m$capacity(x_res)), type="l",
-       ann=FALSE, ylim=c(-1,1), las=1)
+  curve(m2$fitness(x, x_res, m2$capacity(x_res)),
+        type="l", xlim=c(-2,1), ann=FALSE, ylim=c(-1,1), las=1)
   points(x_res,0, pch=16, col="red")
   abline(h=0, col="grey", lty="dashed")
 }
