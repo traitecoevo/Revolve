@@ -1,0 +1,25 @@
+\name{discretise}
+\alias{discretise}
+\title{Generate Heat Map of Community}
+\usage{
+discretise(res, xr = NULL, nx = 101, sample = 10)
+}
+\arguments{
+  \item{res}{List of model states over time}
+
+  \item{xr}{Range of x values (if ommited will be fit to
+  the data)}
+
+  \item{nx}{Number of x points to discretise over}
+
+  \item{sample}{Thin the time axis by this amount (10 means
+  take one point every 10 time steps).  This may not be
+  ideal where time does not proceed in even sized steps.}
+}
+\description{
+Turn model output into data to be plotted by \code{image}.
+}
+\author{
+Rich FitzJohn
+}
+
