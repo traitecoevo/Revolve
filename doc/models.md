@@ -31,14 +31,14 @@ also some multi-dimensional models (two or more traits evolving):
 
 Throughout all of what follows, we assume that a fitness function can be specified, giving the long-term rate of increase for a rare mutant in a resident community. Specifying this function implies two key assumptions.
 
-1. Population sizes are sufficiently large and well mixed. The effect of this assumption is to remove stochastic elements from the population dynamics, which approach their deterministic limits in large populations.
+1. Populations are sufficiently large and well mixed to remove stochastic elements from the population dynamics.
 2. The external (abitoic) environment is constant.
 
-When stochastic population dynamics are of interest a finite size individual-based simulation model will be required.
+If stochastic population dynamics are of interest a finite size individual-based simulation model will be required.
 
 # Definitions
 
-Consider a community of $N$ species potentially differing from one another in $K$ quantitative traits. Let:
+In what follows, we will use the following notation. Consider a community of $N$ species potentially differing from one another in $K$ quantitative traits. Let:
 
 - $N$ be the number of species
 - $K$ be the number of quantitative traits
@@ -55,28 +55,28 @@ and their corresponding abundances
 
 Define $f(x^\prime,x, y)$ to be a scalar-valued function giving
 the per capita rate of increase (fitness) for individuals with trait values
-$x^\prime \in \Re^K$ growing in an environment shaped by resident
-community $(x,y)$.
+$x^\prime$ growing in an environment shaped by resident community $(x,y)$.
 
 Let $\bar{y}$ be the value of $y$ satisfying
 
-\begin{equation}\label{ybar}  \hat{f}(x_{i},x,\bar{y})=0 \, \forall i. \end{equation}
+\begin{equation}\label{ybar}f(x_{i},x,\bar{y})=0 \, \forall i.\end{equation}
 
-Thus when $y = \bar{y}$, residents are at their demographic attractors (time scale separation). We then write
-\begin{equation}\hat{f}(x^\prime,x) = f(x^\prime,x, y)\bigg|_{y=\bar{y}}.\end{equation}
-for the invasion fitness of the mutant, i.e. per capita rate of increase in a
-demographically stable resident population.
+Thus when $y=\bar{y}$ residents are at their demographic attractors. We can then write
+
+\begin{equation} \hat{f}(x^\prime,x) = f(x^\prime,x, y)\bigg|_{y=\bar{y}} \end{equation}
+
+to represent the invasion fitness a mutant in a demographically stable resident population.
 
 # Assembly algorithms
 
 A number of assembly algorithms can be used with any given fitness function. The models are distinguished by the frequency and size of mutations, as illustrated in Fig. \ref{fig:D07-F1}. Here we adopt the terminology of @dieckmann_adaptive_2007.
 
-If mutations occur frequently, evolution proceeds via **polymorphic and stochastic** model of trait evolution (Fig. [fig:D07-F1]a). In this model, polymorphic distributions of trait values stochastically drift and diffuse through selection and mutation.
+If mutations occur frequently, evolution proceeds via **polymorphic and stochastic** model of trait evolution (Fig. \ref{fig:D07-F1}a). In this model, clouds of trait values stochastically drift and diffuse through trait space via selection and mutation.
 
 ![**Models of adaptive dynamics**
 , from @dieckmann_adaptive_2007. Panel (a) illustrates the individual-based birth-death-mutation process (polymorphic and stochastic), panel (b) shows an evolutionary random walk (monomorphic and stochastic), panel (c) represents the gradient-ascent model (monomorphic and deterministic, described by the canonical equation of adaptive dynamics), and panel (d) depicts an evolutionary reaction- diffusion model (polymorphic and deterministic).\label{fig:D07-F1}](images/Dieckmann2007-Fig1.pdf)
 
-When mutations are rare, ecological dynamics proceed much faster than evolutionary dynamics, allowing a formal time-scale separation between evolutionary and ecological processes (Fig. [fig:D07-F2]). Thus, whenever a successful mutation arises, it is allowed to spread before any additional mutations appear. This leads to the **monomorphic** model, so called because each species is represented by a single strategy. The term 'oligomorhpic' is also used to describe communities with several species (*oligo-*, containing a relatively small number of units).
+When mutations are rare, ecological dynamics proceed much faster than evolutionary dynamics. Thus when a successful mutation arises, we can assume it spreads before any additional mutations appear. Under this assumption we have a formal time-scale separation between evolutionary and ecological processes (Fig. \ref{fig:D07-F2}), leading to the **monomorphic** models of adaptive dynamics, so called because each species is represented by a single strategy. The term **oligomorhpic*** is also used to describe communities with several species (*oligo-*, containing a relatively small number of units).
 
 Another assumption about the size of mutation then distinguishes between
 two modes of adaptive evolution that can be handled using the
@@ -95,13 +95,36 @@ species, as solving of demographic attractors becomes more difficult. At a more 
 
 ### Numerical approach
 
+
 The following algorithm can be used to step a stochastic system:
 
-1.  Initialise the phenotypes $x=\left(x_{1}, \ldots, x_{i}, \ldots, x_{N}\right)$ for $N$ resident lineages at time $t=0$ (set $N=1$ for an initially monomorphic community). Define the extinction threshold $\epsilon$.
+step population $\rightarrow$ new mutations  $\rightarrow$ extinctions.
 
-2.  \label{ps:Restart}
-3.  ....
-4.  .....ncrease $N$ by 1 and set $x_{N+1} = x_i^\prime$ .  Return to step \ref{ps:Restart}.
+
+A specific recipe is as follows:
+
+1.  Set parameters:
+	* of ecological model (these are specific to each ecological model)
+	* for the assembly model:
+		* Extinction threshold $\epsilon$
+		* Step size for population dynamics  $\Delta t$
+		* Mutation rate $\mu$
+		* Mutation covariance matrix
+2.  Choose initial resident community
+	*  Select starting phenotypes $x=\left(x_{1}, \ldots, x_{N}\right)$ for $N$ resident lineages at time $t=0$ and corresponding densities $y=\left(y_{1}, \ldots, y_{N}\right)$ ($N=1$ for a single species community).
+3. \label{ps:Restart} Step population by $\Delta t$
+	* Using difference equation for discrete time models ($\Delta t =1$): $y_i (t+ 1) = y_i(t) (1+ f(x_i, x,y))$
+	* Using an adaptive ODE solver for continuous time models: $y_i (t+ \Delta t) = y_i(t) +\int_t^{t+\Delta t} y_i \, f(x_i, x,y)) \, dt.$
+4.  Draw random mutations and add to community
+	* Mutations for each species occur at rate proportional to population size: $\mu \, y_i$. The actual number of mutations in any given step is drawn from a poisson distribution with parameter $\mu \, y_i \, \Delta t$.
+	* For each mutant, draw mutation step $\Delta x$ from assumed distribution
+	* Introduce mutants:
+		*  Increase dimension of community: $N \rightarrow N+1$
+		*  Add mutant at minimum density: $y_N = \epsilon$
+		*  Determine mutant traits: $x_N = x_i + \Delta x$ (assuming mutant arose from $x_i$)
+5.  Remove any strategy that has dropped below extinction threshold
+	* Check $y_i >  \epsilon$ for all strategies
+6. Return to step \ref{ps:Restart}.
 
 ## Monomorphic systems
 
@@ -112,61 +135,47 @@ The following techniques may be applied to find  $\bar{y}$:
 
 1.  **Analytical**: ideal, but only possible in some models and then only with single resident.
 2.  **Multi-dimensional root solving**: This approach works well only if you have good initial guess for the solution. In systems with many species, obtaining a good initial guess is problematic.
-3.  **Iteration**: Using a difference equation, $y_{i,t+1} = y_{i,t} \times 10^{\hat{f}(x_i,x, y_{t})}$, iterate the population until stable. This approach is fail proof, but a large number of iterations may be required to reach stability, especially when fitness is close to zero.
-4.  **Solve system of ODEs**: Express problem as $\frac{\partial}{dt} y_{i} = y_{i} \hat{f}(x_i,x, y)$, then advance the system using an adaptive ODE solver. Depending on the system a stiff solver may perform better, this in turn requires calculation of jacobian.
+3.  **Iteration**: Using a difference equation, $y_i (t+ 1) = y_i(t) (1+ f(x_i, x,y))$, iterate the population until stable. This approach is fail proof, but a large number of iterations may be required to reach stability, especially when fitness is close to zero.
+4.  **Solve system of ODEs**: With $\frac{\partial}{dt} y_{i} = y_{i} \, f(x_i,x, y)$, advance the system using an adaptive ODE solver. Depending on the system a stiff solver may perform better, this in turn requires calculation of jacobian.
 
 For the root solving and ODE approach, it may be preferable to make $\log y$ the state variable, as this prevents negative population sizes being generated by the solver.
 
 ## Monomorphic and stochastic model
 
-This model assumes infrequent but large mutations; evolution then follows a directed random walk through trait space [@dieckmann_dynamical_1996; @dieckmann_adaptive_2007].  Mathematically, the model is described by a master equation for the probability density $P(x,t)$ of realising a given phenotypic
+This model assumes infrequent but large mutations; evolution then follows a directed random walk through trait space (Fig \ref{fig:D07-F1}b) [@dieckmann_dynamical_1996; @dieckmann_adaptive_2007].  Mathematically, the model is described by a master equation for the probability density $P(x,t)$ of realising a given phenotypic
 distribution $x$ at time $t$ [see @dieckmann_dynamical_1996]. The shape of the fitness landscape influences the probability per unit time that a species transitions from its current trait value to another trait value in that direction. Evolution within each species then follows a Markovian *trait substitution sequence*. Mutational processes interact with the selective forces generated by ecological interaction to determine evolutionary trajectories.
 
 ### Numerical approach
 
-The most efficient way to implement the monomorphic stochastic model is
-using Gillespie’s minimal process method
-[@gillespie_general_1976; @dieckmann_dynamical_1996]. Rather than
+The challenge when using this model is that there can large periods of time when nothing happens, while we wait for a new mutation to arise. This suggests an algorithm with an adaptive step size will be needed. One approach is using Gillespie’s minimal process method
+[@gillespie_general_1976; @dieckmann_dynamical_1996; @ito_new_2007; @brannstrom_emergence_2010]. Rather than
 stepping the system over a given time interval and considering any
 transitions that may occur in that time period, the system is stepped
 between successive events by drawing the next invading mutant trait
 value and the time at which the invasion occurs from appropriate
 distributions. The method is founded on the idea that with a given
 mutation rate, the distribution of waiting times follows an exponential
-distribution. Appropriate algorithms are given by
-@dieckmann_dynamical_1996, @ito_new_2007, @brannstrom_emergence_2010.
+distribution.
 
 The following algorithm is adapted from @ito_new_2007:
 
-1.  Initialise the phenotypes
-    $x=\left(x_{1}, \ldots, x_{i}, \ldots, x_{N}\right)$ for $N$
-    resident lineages at time $t=0$ (set $N=1$ for an initially
-    monomorphic community). Define the extinction threshold $\epsilon$.
+1.  Initialise the phenotypes $x=\left(x_{1}, \ldots, x_{i}, \ldots, x_{N}\right)$ for $N$ resident lineages at time $t=0$ (set $N=1$ for an initially monomorphic community).
 
-2.  \label{ms:Restart} Calculate equilibrium population sizes
-    $y=\bar{y}$ satisfying
-    $\hat{f}(x_{i},x,y)=0 \, \forall i$.
+2.  \label{ms:Restart} Calculate equilibrium population sizes $y=\bar{y}$ satisfying $\hat{f}(x_{i},x,y)=0 \, \forall i$.
 
-3.  \label{ms:extinct} Check whether $\bar{y}_{i} < \epsilon$ $\forall i$; if
-    so, delete phenotype $x_i$ and decrease $N$ accordingly. Return to
-    step \ref{ms:Restart}.
+3.  \label{ms:extinct} Check whether $\bar{y}_{i} < \epsilon$ $\forall i$; if so, delete phenotype $x_i$ and decrease $N$ accordingly. Return to step \ref{ms:Restart}.
 
-4.  \label{ms:Weight} Calculate the rate $w_i =\mu_i \bar{y}_i(x) $ for the
-    emergence of a mutant from phenotype $x_i$, the immigration rate
-    $w_{N+1} =I$, and the total mutation rate $w=\sum_{i=1}^{N+1} w_i$.
+4.  \label{ms:Weight} Calculate the rate $w_i =\mu_i \bar{y}_i(x) $ for the emergence of a mutant from phenotype $x_i$, the immigration rate $w_{N+1} =I$, and the total mutation rate $w=\sum_{i=1}^{N+1} w_i$.
 
 5.  \label{ms:newMutant} Choose lineage $i$ with probability $w_i/w$.
 
-6.  Choose a new phenotype $x_i^\prime$ according to the mutation
-    probability density $M(x_i^\prime, x_{i}, \sigma(x_{i}))$ if
-    $i \in (1,N)$, or in the case of immigration, $M_I(x_i^\prime)$.
-    Update time $t$ by adding $\Delta t =-(1/w)\ln p$, where
-    $0\leq p \leq 1$ is a uniformly distributed random number.
+6.  Choose a new phenotype $x_i^\prime$ according to the mutation probability density $M(x_i^\prime, x_{i}, \sigma(x_{i}))$ if $i \in (1,N)$, or in the case of immigration, $M_I(x_i^\prime)$. Update time $t$ by adding $\Delta t =-(1/w)\ln p$, where $0\leq p \leq 1$ is a uniformly distributed random number.
 
-7.  Calculate the invasion fitness of the new
-    phenotype and check if it can invade. The probability of successful invasion depends on the magnitude of $f$ -- however, even if $f$ is positive the mutant may fail because of stochastic demographic effects. For models with continuous-time birth-death process, the probability the mutant succeeds is given $p = max(f,0)/b$ [@dieckmann_dynamical_1996]. Estimating a similar probability in structured populations is no trivial task. As a rough approximation, the probability the mutant succeeds might be estimated as $p = \max(\log(B),0)/log(R)$, where $R$ and $B$ are, respectively, the expected number of offspring and the expected number of offspring reaching maturity produced by an individual reaching maturity. Choose a uniformly distributed random number $0\leq p_r \leq 1$. If
-    $p_r > p$ the mutant fails to invade, return to step
-    \label{ms:newMutant}. Otherwise, increase $N$ by 1 and set $x_{N+1} = x_i^\prime$ .  Return to step \ref{ms:Restart}.
+7.  Calculate the invasion fitness of the new phenotype and check if it can invade. Invasion requires $f >0 $ -- however, even if $f$ is positive the mutant may fail because of stochastic demographic effects.
+    * The probability $p$ the mutant survives is calculated as a function of $f$. For models with continuous-time birth-death process, this probability also depends on birth rate $p = max(f,0)/b$ [@dieckmann_dynamical_1996]. Unfortunately there is no easy analogue in structured populations. As a rough approximation, $p = \max(\log(B),0)/log(R)$, where $R$ and $B$ are, respectively, the expected number of offspring and the expected number of offspring reaching maturity produced by an individual reaching maturity.
+    * Choose a uniformly distributed random number $0\leq p_r \leq 1$. If $p_r > p$ the mutant fails to invade, return to step \label{ms:newMutant}.
+
+8. Does mutation lead to trait substitution or evolutionary branching? increase $N$ by 1 and set $x_{N+1} = x_i^\prime$ .  Return to step \ref{ms:Restart}.
 
 The above recipe estimates the waiting time between successive mutants,
 and then asks whether such mutants can invade. It is also possible to
