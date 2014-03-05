@@ -20,10 +20,10 @@ test_that("Model parameters", {
 test_that("Model components", {
   m <- make_kisdi_1999()
   expect_that(names(m), equals(c("fitness", "competition",
-                                 "capacity", "parameters")))
+                                 "intrinsic_growth", "parameters")))
   expect_that(m$fitness,      is_a("function"))
   expect_that(m$competition,  is_a("function"))
-  expect_that(m$capacity,     is_a("function"))
+  expect_that(m$intrinsic_growth,     is_a("function"))
   expect_that(m$parameters,   is_a("parameters"))
 })
 
@@ -42,11 +42,11 @@ test_that("Components work", {
   p_convex   <- m_convex$parameters$get()
 
   xx <- seq(-1, 1, length.out=101)
-  expect_that(m_linear$capacity(xx),
+  expect_that(m_linear$intrinsic_growth(xx),
               equals(p_linear$beta - p_linear$b * xx))
-  expect_that(m_gaussian$capacity(xx),
+  expect_that(m_gaussian$intrinsic_growth(xx),
               equals(p_gaussian$a * gaussian(xx, p_gaussian$m, p_gaussian$s2)))
-  expect_that(m_convex$capacity(xx),
+  expect_that(m_convex$intrinsic_growth(xx),
               equals(-p_convex$a -
                      p_convex$b * (xx - sqrt(xx^2 + p_convex$d))))
 
@@ -75,9 +75,9 @@ test_that("Components work", {
   ## Now, try this on an established population:
   set.seed(100)
   x <- rnorm(5)
-  y <- runif(length(x)) * m$capacity(x)
+  y <- runif(length(x)) * m$intrinsic_growth(x)
 
-  w.cmp <- m$capacity(xp) - sum(y * m$competition(xp, x))
+  w.cmp <- m$intrinsic_growth(xp) - sum(y * m$competition(xp, x))
   expect_that(m$fitness(xp, x, y), equals(w.cmp))
 
   ## Multiple mutants at once:
@@ -97,7 +97,7 @@ test_that("Single species equilibrium", {
 
   alpha <- function(xp) drop(m$competition(0, 0 - xp))
   xp <- p$beta / p$b + alpha(0) / grad(alpha, 0)
-  n <- m$capacity(xp) / alpha(0)
+  n <- m$intrinsic_growth(xp) / alpha(0)
 
   ## Growth rate is zero at equilibrium:
   expect_that(m$fitness(xp, xp, n), equals(0))
@@ -119,7 +119,7 @@ test_that("Single species equilibrium (gaussian)", {
   # Gaussian: monomorphic singular strategy at
   #   m - a'(0) / a(0) * s2
   xp <- p$m - grad(alpha, 0) / alpha(0) * p$s2
-  n <- m$capacity(xp) / alpha(0)
+  n <- m$intrinsic_growth(xp) / alpha(0)
 
   ## Growth rate is zero at equilibrium:
   expect_that(m$fitness(xp, xp, n), equals(0))

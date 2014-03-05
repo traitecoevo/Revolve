@@ -4,7 +4,7 @@ library(Revolve)
 y_initial <- 1        # initial mutant frequency
 dt        <- 1        # Size of the time step
 mu        <- 0.001    # Mutation rate
-s2_mu     <- (1/20)^2 # Mutational variance
+s2_mu     <- (1/10)^2 # Mutational variance
 
 ## Two instances of the model; one has the competition kernel wider
 ## than the resource kernel (m1), which should prevent coexistance and
@@ -27,9 +27,9 @@ step1 <- make_step(m1$fitness, mutation, dt, mu, y_initial)
 step2 <- make_step(m2$fitness, mutation, dt, mu, y_initial)
 
 ## Run the system for 3000 steps:
-set.seed(1)
+# set.seed(1)
 res1 <- run(sys0, 3000, step1, cleanup)
-res2 <- run(sys0, 3000, step2, cleanup)
+res2 <- run(sys0, 30000, step2, cleanup)
 
 ## Plot the community over time; binned into
 cols <- grey((32:0)/32)
@@ -70,15 +70,15 @@ abline(h=0)
 mtext("Trait", 1, 3, xpd=NA)
 par(op)
 
-## Here is the fitness as a single phenotype approaches the branching point.
-op <- par(mfrow=c(1,5), oma=c(2.5, 2.5, 2, 0), mar=c(2.1, 2.1, .5, .5))
-for (x_res in seq(-2, 0, length.out=5)) {
-  curve(m2$fitness(x, x_res, m2$capacity(x_res)),
-        type="l", xlim=c(-2,1), ann=FALSE, ylim=c(-1,1), las=1)
-  points(x_res,0, pch=16, col="red")
-  abline(h=0, col="grey", lty="dashed")
-}
-title("Change in fitness landscape approaching branching point", outer=TRUE)
-mtext("Trait value",1, outer=TRUE, line=.5)
-mtext("Fitness",2, outer=TRUE, line=.5)
-par(op)
+# ## Here is the fitness as a single phenotype approaches the branching point.
+# op <- par(mfrow=c(1,5), oma=c(2.5, 2.5, 2, 0), mar=c(2.1, 2.1, .5, .5))
+# for (x_res in seq(-2, 0, length.out=5)) {
+#   curve(m2$fitness(x, x_res, m2$capacity(x_res)),
+#         type="l", xlim=c(-2,1), ann=FALSE, ylim=c(-1,1), las=1)
+#   points(x_res,0, pch=16, col="red")
+#   abline(h=0, col="grey", lty="dashed")
+# }
+# title("Change in fitness landscape approaching branching point", outer=TRUE)
+# mtext("Trait value",1, outer=TRUE, line=.5)
+# mtext("Fitness",2, outer=TRUE, line=.5)
+# par(op)

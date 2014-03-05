@@ -5,7 +5,7 @@ Revolve
 
 Adaptive Dynamics toolkit for R
 
-Here we are trying to achive two things:
+Here we are trying to achieve two things:
 
 1. A tool kit for exploring evolutionary models using techniques from
    adaptive dynamics.
