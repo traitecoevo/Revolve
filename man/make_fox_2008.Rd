@@ -1,0 +1,28 @@
+\name{make_fox_2008}
+\alias{make_fox_2008}
+\title{Fox and Vasseur 2008}
+\usage{
+make_fox_2008(Y = rbind(c(0.5, 1), c(1, 0.5)), d = 0.1, D = 0.1,
+  S = c(1, 1))
+}
+\arguments{
+  \item{Y}{See paper}
+
+  \item{d}{See paper}
+
+  \item{D}{See paper}
+
+  \item{S}{See paper}
+}
+\description{
+Model implementing "Character Convergence under Competition
+for Nutritionally Essential Resources.", Fox and Vasseur,
+The American Naturalist, 2008.
+}
+\details{
+Test case...
+}
+\author{
+Georges Kunstler and Rich FitzJohn
+}
+
