@@ -23,6 +23,7 @@
 ##' @param d Parameter of convex intrinsic growth function
 ##' @author Rich FitzJohn
 ##' @export
+##' @importFrom numDeriv grad
 make_kisdi_1999 <- function(intrinsic_growth_type="linear", c=2, v=1.2, k=4,
                             beta=1, b=1, a=1, m=0, s2=1, d=3.5) {
   defaults <- list(c=c, v=v, k=k, beta=beta, b=b, a=a, m=m, s2=s2, d=d)
@@ -33,6 +34,33 @@ make_kisdi_1999 <- function(intrinsic_growth_type="linear", c=2, v=1.2, k=4,
   ## Equation 1:
   competition <- function(x_new, x)
     c * (1 - 1 / (1 + v * exp(- k * (-outer(x, x_new, "-")))))
+
+  single_equilibrium <- function() {
+    switch(intrinsic_growth_type,
+           linear=single_equilibrium_linear,
+           gaussian=single_equilibrium_gaussian,
+           stop("Not implemented for type ", intrinsic_growth_type))()
+  }
+  single_equilibrium_linear <- function() {
+    # Linear: monomorphic singular strategy at
+    # beta / b + a(0) /  a'(0)
+    alpha <- function(xp) {
+      drop(competition(0, 0 - xp))
+    }
+    x <- beta / b + alpha(0) / grad(alpha, 0)
+    y <- intrinsic_growth(x) / alpha(0)
+    sys(x, y)
+  }
+  single_equilibrium_gaussian <- function() {
+    # Gaussian: monomorphic singular strategy at
+    #   m - a'(0) / a(0) * s2
+    alpha <- function(xp) {
+      drop(competition(0, 0 - xp))
+    }
+    x <- m - grad(alpha, 0) / alpha(0) * s2
+    y <- intrinsic_growth(x) / alpha(0)
+    sys(x, y)
+  }
 
   ## Equation 12:
   intrinsic_growth_linear <- function(x)
@@ -50,10 +78,11 @@ make_kisdi_1999 <- function(intrinsic_growth_type="linear", c=2, v=1.2, k=4,
                      gaussian=intrinsic_growth_gaussian,
                      convex=intrinsic_growth_convex)
 
-  ret <- list(fitness           = fitness,
-              competition       = competition,
-              intrinsic_growth  = intrinsic_growth,
-              parameters        = parameters)
+  ret <- list(fitness            = fitness,
+              competition        = competition,
+              intrinsic_growth   = intrinsic_growth,
+              parameters         = parameters,
+              single_equilibrium = single_equilibrium)
   class(ret) <- "model"
   ret
 }

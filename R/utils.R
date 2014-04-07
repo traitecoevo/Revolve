@@ -327,3 +327,7 @@ run <- function(sys, n_steps, step, cleanup=identity, print_every=0) {
   }
   res
 }
+
+sys <- function(x, y, t=0) {
+  list(x=x, y=y, t=t)
+}

@@ -20,11 +20,13 @@ test_that("Model parameters", {
 test_that("Model components", {
   m <- make_kisdi_1999()
   expect_that(names(m), equals(c("fitness", "competition",
-                                 "intrinsic_growth", "parameters")))
-  expect_that(m$fitness,      is_a("function"))
-  expect_that(m$competition,  is_a("function"))
-  expect_that(m$intrinsic_growth,     is_a("function"))
-  expect_that(m$parameters,   is_a("parameters"))
+                                 "intrinsic_growth", "parameters",
+                                 "single_equilibrium")))
+  expect_that(m$fitness,            is_a("function"))
+  expect_that(m$competition,        is_a("function"))
+  expect_that(m$intrinsic_growth,   is_a("function"))
+  expect_that(m$parameters,         is_a("parameters"))
+  expect_that(m$single_equilibrium, is_a("function"))
 })
 
 test_that("Components work", {
@@ -90,44 +92,34 @@ test_that("Components work", {
 
 test_that("Single species equilibrium", {
   m <- make_kisdi_1999()
-  p <- m$parameters$get()
+  eq <- m$single_equilibrium()
 
-  # Linear: monomorphic singular strategy at
-  # beta / b + a(0) /  a'(0)
-
-  alpha <- function(xp) drop(m$competition(0, 0 - xp))
-  xp <- p$beta / p$b + alpha(0) / grad(alpha, 0)
-  n <- m$intrinsic_growth(xp) / alpha(0)
+  expect_that(eq, equals(list(x=0.45, y=0.504166667, t=0)))
 
   ## Growth rate is zero at equilibrium:
-  expect_that(m$fitness(xp, xp, n), equals(0))
+  expect_that(m$fitness(eq$x, eq$x, eq$y), equals(0))
 
   ## Fitness gradient is zero at attactor:
-  expect_that(grad(function(x) m$fitness(x, xp, n), xp),
+  expect_that(grad(function(x) m$fitness(x, eq$x, eq$y), eq$x),
               equals(0))
   ## Local minimum (branching point):
-  expect_that(hessian(function(x) m$fitness(x, xp, n), xp),
+  expect_that(hessian(function(x) m$fitness(x, eq$x, eq$y), eq$x),
               is_greater_than(0))
 })
 
 test_that("Single species equilibrium (gaussian)", {
   m <- make_kisdi_1999("gaussian")
-  p <- m$parameters$get()
 
-  alpha <- function(xp) drop(m$competition(0, 0 - xp))
-
-  # Gaussian: monomorphic singular strategy at
-  #   m - a'(0) / a(0) * s2
-  xp <- p$m - grad(alpha, 0) / alpha(0) * p$s2
-  n <- m$intrinsic_growth(xp) / alpha(0)
+  eq <- m$single_equilibrium()
+  expect_that(eq, equals(list(x=1.81818181817275, y=0.17553726209967, t=0)))
 
   ## Growth rate is zero at equilibrium:
-  expect_that(m$fitness(xp, xp, n), equals(0))
+  expect_that(m$fitness(eq$x, eq$x, eq$y), equals(0))
 
   ## Fitness gradient is zero at attactor:
-  expect_that(grad(function(x) m$fitness(x, xp, n), xp),
+  expect_that(grad(function(x) m$fitness(x, eq$x, eq$y), eq$x),
               equals(0))
   ## Local minimum (branching point):
-  expect_that(hessian(function(x) m$fitness(x, xp, n), xp),
+  expect_that(hessian(function(x) m$fitness(x, eq$x, eq$y), eq$x),
               is_greater_than(0))
 })
