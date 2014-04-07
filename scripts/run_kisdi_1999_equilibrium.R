@@ -37,3 +37,31 @@ points(sys$x, m$fitness(sys$x, sys$x, sys$y), col=col, pch=19)
 abline(h=0)
 mtext("Trait", 1, 3, xpd=NA)
 par(op)
+
+sys <- res[[length(res)]]
+set.seed(1)
+
+## NOTE: Notation from Ito (2007) -- w is not a good choice here.
+w <- sys$y * mu
+
+repeat {
+  ## Update evolutionary time; ignore the ecological time.
+  sys$t <- sys$t + rexp(1, sum(w))
+
+  ## Create a single mutation:
+  i <- sample(length(w), 1, prob=w)
+  mutant <- mutation(sys$x, as.integer(seq_along(w) == i))
+
+  ## Check that the mutant has positive fitness at the current point:
+  if (m$fitness(mutant, sys$x, sys$y) >= 0)
+    break
+}
+
+## Add the mutant to the population and run to equilibrium:
+sys$x <- c(sys$x, mutant)
+sys$y <- c(sys$y, y_initial)
+tmp <- step_eq(sys)
+
+## Check that the parent of the mutant could still invade at
+## equilibrium:
+sys$x[i]
