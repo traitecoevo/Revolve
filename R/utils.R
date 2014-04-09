@@ -357,3 +357,10 @@ equilibrium_ <- function(dydt, x, y, method="runsteady",
 lsoda_nolist <- function(y, times, func, ...) {
   lsoda(y, times, function(...) list(func(...)), ...)
 }
+
+colMins <- function(x) {
+  apply(x, 2, min)
+}
+rowMins <- function(x) {
+  apply(x, 1, min)
+}

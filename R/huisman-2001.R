@@ -5,7 +5,18 @@
 ##' competition. Ecology 82, 2682–2695..
 ##'
 ##' Test case...
+##'
+##' Warning: there are some dependent parameters here, and they won't
+##' be updated until I sort out some sort of parameter hook.  Or I'll
+##' just remove the ability to set parameters from the parmeters
+##' object, which reduces the complexity a bit.
+##'
+##' So, what we need to have is a couple of "axes" for parameters to
+##' vary over.  But the actual parameters underlying things are a
+##' crazy matrix of values.
+##' 
 ##' @title Huisman & Weissing 2001
+##' @param r Intrinsic growth rate
 ##' @param m Mortality rate
 ##' @param D Resource turnover rate
 ##' @param S Supply rate
@@ -13,20 +24,33 @@
 ##' @param k Number of resources
 ##' @author Georges Kunstler and Rich FitzJohn
 ##' @export
-make_huisman_2001<- function(m=0.25, D=0.25, S=c(1, 1), n=2L, k=2L) {
-  defaults <- list(m=m, D=D, S=S, n=n, k=k)
+make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=c(1, 1), n=2L, k=2L) {
+  defaults <- list(r=r, m=m, D=D, S=S, n=n, k=k)
   parameters <- make_parameters(defaults, environment())
   if (n != 2 || k != 2) {
-    stop("Not yet implemented/tested")
+    # Currently the only dramas are:
+    #   K() is hard coded for two resources
+    #   C() is hard coded for n = k
+    # Everything else should work with an arbitrary number and we can
+    # break either constraint here easily enough.
+    #
+    # However, this does require that we can map from 'x' to the K and
+    # C matrices.
+    stop("Not yet implemented")
   }
 
   dydt <- function(t, ode.y, x, ...) {
+    if (length(x) != n) {
+      stop("Unexpected length 'x'")
+    }
     i <- seq_len(k) # index to resources
     R <- ode.y[i]
     y <- ode.y[-i]
-    gi <- g(x, R)
-    dRdt <- D * (S - R) - colSums(y * gi * cbind(x, 1-x) )
-    dydt <- y * (gi - m)
+
+    min.p <- colMins(p(x, R))
+
+    dRdt <- D * (S - R) - colSums(C(x) * y * min.p)
+    dydt <- y * (min.p - m)
     c(dRdt, dydt)
   }
 
@@ -51,16 +75,36 @@ make_huisman_2001<- function(m=0.25, D=0.25, S=c(1, 1), n=2L, k=2L) {
     list(t=res[,i.t], R=res[,i.R], y=res[,i.y])
   }
 
-  # TODO: Hard coded for two strategies.  Also for two species?
-  g <- function(x, R) {
-    pmin(R[1]/(   x    +  R[1]),
-         R[2]/((1 - x) +  R[2]))
+  # Equation 2 in the paper:
+  p <- function(x, R) {
+    r * R / (K(x) + R)
+  }
+  # K(x) -> generates a matrix where each column is a species, and
+  # each column is a resource.  It's set up so that the performance on
+  # one resource is inversely related to the performance on the second
+  # resource.  As such, 'x' entirely determines a species (at least
+  # for now).
+  K <- function(x) {
+    rbind(x, 1-x, deparse.level=0)
+  }
+  # C(x) is the transpose of K(x), at least for now.  This obviously
+  # only makes sense where n = k, which is not the general case.  We
+  # can deal with this later...
+  #
+  # It's quite possible that through judicious choice of functions
+  # here we could absorb the Fox model, too.
+  C <- function(x) {
+    t(K(x))
   }
 
+  Rstar <- function(x) {
+    m * K(x) / (r - m)
+  }
 
   ret <- list(equilibrium  = equilibrium,
               run          = run,
-              parameters   = parameters)
+              parameters   = parameters,
+              K=K, C=C, p=p, Rstar=Rstar)
   class(ret) <- "model"
   ret
 }
