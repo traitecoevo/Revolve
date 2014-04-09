@@ -35,9 +35,6 @@ make_fox_2008 <- function(Y=rbind(c(0.5, 1), c(1, 0.5)),
     dydt <- y * (gj - d)
     c(dydt, dRdt)
   }
-  dydt.deSolve <- function(...) {
-    list(dydt(...))
-  }
 
   ## Given traits 'x' and initial densities 'y', compute the
   ## equilibrium.  Return the equilibrium resource availability at the
@@ -46,27 +43,13 @@ make_fox_2008 <- function(Y=rbind(c(0.5, 1), c(1, 0.5)),
                           init_time=200,
                           max_time=1e5) {
     # Initial resources are set to 'S'
-    y0 <- c(y, S)
-    if (init_time > 0) {
-      y0 <- unname(lsoda(y0, c(0, init_time), dydt.deSolve, x)[2,-1])
-    }
-    
-    method <- match.arg(method, c("runsteady", "nleqslv", "simple"))
-    if (method == "runsteady") {
-      ans <- runsteady(y0, dydt.deSolve, x, times=c(0, Inf),
-                       hmax=1)$y
-    } else if (method == "nleqslv") {
-      ans <- nleqslv(y0, function(y) dydt(0, y, x), global="none")$x
-    } else if (method == "simple") {
-      ans <- unname(lsoda(y0, c(init_time, max_time), dydt.deSolve, x)[2,-1])
-    }
-
+    ans <- equilibrium_(dydt, x, c(S, y), method, init_time, max_time)
     list(y=ans[1:2], R=ans[3:4])
   }
 
   run <- function(x, y, times) {
     y0 <- c(y, S)
-    res <- lsoda(y0, times, dydt.deSolve, x)
+    res <- lsoda_nolist(y0, times, dydt, x)
     list(t=res[,1],
          y=res[,2:3],
          R=res[,4:5])

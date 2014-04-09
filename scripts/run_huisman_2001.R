@@ -3,7 +3,6 @@ library(Revolve)
 library(deSolve)
 library(plyr)
 
-# source('R/huisman-2001.R')
 xx <- c(0.2, 0.7) 
 yy <- c(0.3, 0.7)
 tt <- seq(0, 300, length=301)

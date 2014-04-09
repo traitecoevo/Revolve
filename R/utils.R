@@ -331,3 +331,29 @@ run <- function(sys, n_steps, step, cleanup=identity, print_every=0) {
 sys <- function(x, y, t=0) {
   list(x=x, y=y, t=t)
 }
+
+# Excuse the slightly odd name: this is designed to be used from
+# within functions called 'equilibrium', so we need to be able to
+# distinguish it somehow.  May tidy that up later...
+equilibrium_ <- function(dydt, x, y, method="runsteady",
+                        init_time=200, max_time=1e5) {
+  method <- match.arg(method, c("runsteady", "nleqslv", "simple"))
+
+  if (init_time > 0) {
+    y <- unname(lsoda_nolist(y, c(0, init_time), dydt, x)[2,-1])
+  }
+
+  if (method == "runsteady") {
+    dydt.deSolve <- function(...) list(dydt(...))
+    ans <- runsteady(y, dydt.deSolve, x, times=c(0, Inf), hmax=1)$y
+  } else if (method == "nleqslv") {
+    ans <- nleqslv(y, function(y) dydt(0, y, x), global="none")$x
+  } else if (method == "simple") {
+    ans <- unname(lsoda_nolist(y, c(init_time, max_time), dydt, x)[2,-1])
+  }
+  ans
+}
+
+lsoda_nolist <- function(y, times, func, ...) {
+  lsoda(y, times, function(...) list(func(...)), ...)
+}
