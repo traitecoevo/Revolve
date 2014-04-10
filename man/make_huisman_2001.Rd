@@ -4,7 +4,7 @@
 \alias{make_huisman_2001}
 \title{Huisman & Weissing 2001}
 \usage{
-make_huisman_2001(r = 1, m = 0.25, D = 0.25, S = c(1, 1),
+make_huisman_2001(r = 1, m = 0.25, D = 0.25, S = 1,
   matrices = huisman_matrices())
 
 huisman_mat_2(x)
@@ -27,17 +27,19 @@ huisman_matrices(K = huisman_mat_2, C = huisman_mat_2)
   species trait values, on a scale of 0 to 1 (not
   checked).}
 
-  \item{K,}{C functions that generate matrices K and C (see
-  the paper) or matrices themselves.  If these are
-  functions, then they must take exactly one argument 'x':
-  this argument is used nowhere except for these two
-  functions, but will be accepted by \code{run} and
+  \item{K}{function that generate the K matrix (see the
+  paper) or the K matrix itself.  If this is a function,
+  then they must take exactly one argument 'x': this
+  argument is used nowhere except for these two functions,
+  but will be accepted by \code{run} and
   \code{equilibrium}.}
+
+  \item{C}{as for K, but for the C matrix.}
 }
 \description{
 Model implementing "Huisman, J., and Weissing, F.J. (2001).
 Biological conditions for oscillations and chaos generated
-by multispecies competition. Ecology 82, 2682–2695..
+by multispecies competition. Ecology 82, 2682-2695.
 
 K(x) -> generates a matrix where each column is a species,
 and each row is a resource.  It's set up so that the
