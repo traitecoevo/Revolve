@@ -17,10 +17,16 @@ test_that("Model components", {
   expect_that(m$equilibrium, is_a("function"))
   expect_that(m$run,         is_a("function"))
   expect_that(m$parameters,  is_a("parameters"))
-  expect_that(m$n,           is_identical_to(2L))
+  expect_that(m$n,           equals(NA))
   expect_that(m$k,           is_identical_to(2L))
   expect_that(m$K,           is_identical_to(huisman_mat_2))
   expect_that(m$C,           is_identical_to(huisman_mat_2))
   expect_that(m$p,           is_a("function"))
   expect_that(m$Rstar,       is_a("function"))
 })
+
+# Results to check:
+
+# Several species, 1 resource.
+#   - species with the lowest requirement for the limiting resource
+#   (lowest R*) will displace all other species.

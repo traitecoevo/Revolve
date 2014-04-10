@@ -37,11 +37,10 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
     stop("Invalid length S")
   }
   i.R <- seq_len(k)
-  i.y <- seq(k+1, length.out=n)
 
   dydt <- function(t, ode.y, x, ...) {
     R <- ode.y[i.R]
-    y <- ode.y[i.y]
+    y <- ode.y[-i.R]
 
     # Equation 3
     min.p <- colMins(p(x, R))
@@ -60,16 +59,16 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
                           max_time=1e5) {
     res <- equilibrium_(dydt, x, initial.conditions(y),
                         method, init_time, max_time)
-    list(R=res[i.R], y=res[i.y])
+    list(R=res[i.R], y=res[-i.R])
   }
 
   run <- function(x, y, times) {
-    res <- lsoda_nolist(initial.conditions(y), times, dydt, x)
-    list(t=res[,1], R=res[,i.R+1], y=res[,i.y+1])
+    res <- lsoda_nolist(initial.conditions(y), times, dydt, x)[,-1,drop=FALSE]
+    list(t=times, R=res[,i.R], y=res[,-i.R])
   }
 
   initial.conditions <- function(y0) {
-    if (length(y0) != n) {
+    if (!is.na(n) && length(y0) != n) {
       stop("Invalid length initial conditions")
     }
     c(S, y0)
@@ -141,13 +140,7 @@ huisman_matrices <- function(K=huisman_mat_2, C=huisman_mat_2) {
     if (!identical(C, huisman_mat_2)) {
       stop("Invalid values for C")
     }
-    # Currently the only dramas are:
-    #   K() is hard coded for two resources
-    #   C() is hard coded to be the same as K()
-    # So we should now be good to go with an arbitrary number of
-    # species on 2 resources.  So for now, we restrict to two
-    # resources.
-    matrices <- list(K=K, C=C, n=2L, k=2L)
+    matrices <- list(K=K, C=C, n=NA, k=2L)
   } else {
     stop("Invalid values for K")
   }
