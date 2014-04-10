@@ -30,12 +30,10 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=c(1, 1), n=2L, k=2L) {
   if (n != 2 || k != 2) {
     # Currently the only dramas are:
     #   K() is hard coded for two resources
-    #   C() is hard coded for n = k
-    # Everything else should work with an arbitrary number and we can
-    # break either constraint here easily enough.
-    #
-    # However, this does require that we can map from 'x' to the K and
-    # C matrices.
+    #   C() is hard coded to be the same as K()
+    # So we should now be good to go with an arbitrary number of
+    # species on 2 resources, but that's not tested yet so the error
+    # stays.
     stop("Not yet implemented")
   }
 
@@ -49,7 +47,7 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=c(1, 1), n=2L, k=2L) {
 
     min.p <- colMins(p(x, R))
 
-    dRdt <- D * (S - R) - colSums(C(x) * y * min.p)
+    dRdt <- D * (S - R) - drop(C(x) %*% (y * min.p))
     dydt <- y * (min.p - m)
     c(dRdt, dydt)
   }
@@ -80,7 +78,7 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=c(1, 1), n=2L, k=2L) {
     r * R / (K(x) + R)
   }
   # K(x) -> generates a matrix where each column is a species, and
-  # each column is a resource.  It's set up so that the performance on
+  # each row is a resource.  It's set up so that the performance on
   # one resource is inversely related to the performance on the second
   # resource.  As such, 'x' entirely determines a species (at least
   # for now).
@@ -94,7 +92,7 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=c(1, 1), n=2L, k=2L) {
   # It's quite possible that through judicious choice of functions
   # here we could absorb the Fox model, too.
   C <- function(x) {
-    t(K(x))
+    K(x)
   }
 
   Rstar <- function(x) {
