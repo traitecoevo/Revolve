@@ -39,7 +39,7 @@ huisman_matrices(K = huisman_mat_2, C = huisman_mat_2)
 \description{
 Model implementing "Huisman, J., and Weissing, F.J. (2001).
 Biological conditions for oscillations and chaos generated
-by multispecies competition. Ecology 82, 2682-2695.
+by multispecies competition. Ecology 82, 2682-2695."
 
 K(x) -> generates a matrix where each column is a species,
 and each row is a resource.  It's set up so that the
