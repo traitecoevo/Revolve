@@ -1,6 +1,4 @@
-library(rootSolve)
 library(Revolve)
-library(deSolve)
 library(plyr)
 
 xx <- c(0.2, 0.7) 
