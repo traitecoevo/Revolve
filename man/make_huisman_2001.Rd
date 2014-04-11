@@ -1,4 +1,5 @@
 \name{make_huisman_2001}
+\alias{huisman_mat_1}
 \alias{huisman_mat_2}
 \alias{huisman_matrices}
 \alias{make_huisman_2001}
@@ -9,7 +10,9 @@ make_huisman_2001(r = 1, m = 0.25, D = 0.25, S = 1,
 
 huisman_mat_2(x)
 
-huisman_matrices(K = huisman_mat_2, C = huisman_mat_2)
+huisman_matrices(K = huisman_mat_2, C = NULL)
+
+huisman_mat_1(x, i)
 }
 \arguments{
   \item{r}{Intrinsic growth rate}

@@ -1,6 +1,7 @@
 S3method("names<-",parameters)
 S3method(names,parameters)
 export(discretise)
+export(huisman_mat_1)
 export(huisman_mat_2)
 export(huisman_matrices)
 export(make_cleanup)

@@ -51,6 +51,27 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
     c(dRdt, dydt)
   }
 
+  # For fitness we want the *per-capita growth rate*; that is (min.p -
+  # m), rather than y * (min.p - m).  We can't just divide by y
+  # because we want it when y = 0 (rather than just being close).  For
+  # now, I think we can just fake it by repeating a bunch of the
+  # stuff.
+  #
+  # The issue that we have in terms of interface is that this doesn't
+  # really depend on {x,y} as such, but on 'R', which is itself
+  # determined by {x,y}.
+  #
+  # So, we have issues here.  If we vary 'y', this causes a change in
+  # the resource availability but we can't easily run out just that
+  # equation.
+  #
+  # For now, assume that {x,y,R} at equilibrium.  Though the equation
+  # below does not actually require it to be true.
+  fitness <- function(x_new, x, y, R) {
+    min.p <- colMins(p(x_new, R))
+    min.p - m
+  }
+
   ## Given traits 'x' and initial densities 'y', compute the
   ## equilibrium.  Return the equilibrium resource availability at the
   ## same time.
@@ -85,15 +106,24 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
     m * K(x) / (r - m)
   }
 
+  # This is based on the solution to equation 1b = 0, given R*.
+  single_equilibrium <- function(x) {
+    R <- Rstar(x)
+    y <- D * (S - R) / (C(x) *  p(x, R))
+    list(R=drop(R), y=drop(y))
+  }
+
   # So, still no 'fitness' function here yet.  I guess it's dNdt, but
   # at equilibrium resource dynamics, which probably need providing.
   # Or if they're absent we could just run up from the initial
   # conditions.
-  ret <- list(equilibrium  = equilibrium,
+  ret <- list(fitness = fitness,
+              equilibrium  = equilibrium,
               run          = run,
               parameters   = parameters,
               # Lower level components that might be useful:
-              n=n, k=k, K=K, C=C, p=p, Rstar=Rstar)
+              n=n, k=k, K=K, C=C, p=p, Rstar=Rstar,
+              single_equilibrium=single_equilibrium)
   class(ret) <- "model"
   ret
 }
@@ -129,7 +159,7 @@ huisman_mat_2 <- function(x) {
 ##' @param C as for K, but for the C matrix.
 ##' @rdname make_huisman_2001
 ##' @export
-huisman_matrices <- function(K=huisman_mat_2, C=huisman_mat_2) {
+huisman_matrices <- function(K=huisman_mat_2, C=NULL) {
   # Lots of different ways that this can be done, so just taking the
   # easy way our for now.
   if (is.matrix(K)) {
@@ -138,13 +168,23 @@ huisman_matrices <- function(K=huisman_mat_2, C=huisman_mat_2) {
     }
     matrices <- list(K=function(x) K, C=function(x) C,
                      n=ncol(K), k=nrow(K))
+  } else if (identical(K, huisman_mat_1)) {
+    K <- function(x) huisman_mat_1(x, 1)
+    C <- function(x) huisman_mat_1(x, 2)
+    matrices <- list(K=K, C=C, n=NA, k=1L)
   } else if (identical(K, huisman_mat_2)) {
-    if (!identical(C, huisman_mat_2)) {
+    if (!is.null(C)) {
       stop("Invalid values for C")
     }
-    matrices <- list(K=K, C=C, n=NA, k=2L)
+    matrices <- list(K=K, C=K, n=NA, k=2L)
   } else {
     stop("Invalid values for K")
   }
   matrices
+}
+
+##' @export
+##' @rdname make_huisman_2001
+huisman_mat_1 <- function(x, i) {
+  x[i,,drop=FALSE]
 }
