@@ -12,8 +12,11 @@ test_that("Model parameters", {
 
 test_that("Model components", {
   m <- make_huisman_2001()
-  expect_that(names(m), equals(c("equilibrium", "run", "parameters",
-                                 "n", "k", "K", "C", "p", "Rstar")))
+  expect_that(names(m), equals(c("fitness",
+                                 "equilibrium", "run", "parameters",
+                                 "n", "k", "K", "C", "p", "Rstar",
+                                 "single_equilibrium")))
+  expect_that(m$fitness,     is_a("function"))
   expect_that(m$equilibrium, is_a("function"))
   expect_that(m$run,         is_a("function"))
   expect_that(m$parameters,  is_a("parameters"))
@@ -23,6 +26,8 @@ test_that("Model components", {
   expect_that(m$C,           is_identical_to(huisman_mat_2))
   expect_that(m$p,           is_a("function"))
   expect_that(m$Rstar,       is_a("function"))
+  expect_that(m$single_equilibrium,
+              is_a("function"))
 })
 
 # Results to check:
