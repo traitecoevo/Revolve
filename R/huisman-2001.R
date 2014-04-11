@@ -79,6 +79,8 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
     r * R / (K(x) + R)
   }
   # Equation 4:
+  # This has the same orientation as K: each row is a resource, each
+  # column is a species.
   Rstar <- function(x) {
     m * K(x) / (r - m)
   }
