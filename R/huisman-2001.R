@@ -183,6 +183,7 @@ huisman_matrices <- function(K=huisman_mat_2, C=NULL) {
   matrices
 }
 
+##' @param i Internally used (but is 1 for K, 2 for C).
 ##' @export
 ##' @rdname make_huisman_2001
 huisman_mat_1 <- function(x, i) {

@@ -38,6 +38,8 @@ huisman_mat_1(x, i)
   \code{equilibrium}.}
 
   \item{C}{as for K, but for the C matrix.}
+
+  \item{i}{Internally used (but is 1 for K, 2 for C).}
 }
 \description{
 Model implementing "Huisman, J., and Weissing, F.J. (2001).
