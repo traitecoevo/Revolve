@@ -14,7 +14,7 @@
 ##' So, what we need to have is a couple of "axes" for parameters to
 ##' vary over.  But the actual parameters underlying things are a
 ##' crazy matrix of values.
-##' 
+##'
 ##' @title Huisman & Weissing 2001
 ##' @param r Intrinsic growth rate
 ##' @param m Mortality rate
@@ -140,7 +140,33 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
   # This is based on the solution to equation 1b = 0, given R*.
   single_equilibrium <- function(x) {
     R <- Rstar(x)
+    if (ncol(R) != 1) {
+      stop("Only valid for one species")
+    }
+
+    # Density when limited by each resource:
     y <- D * (S - R) / (C(x) *  p(x, R))
+    if (nrow(R) == 1) { # 1 resource - R is at equilibrium
+    } else if (nrow(R) == 2) { # 2 resource
+      c.slope <- C(x)[2,1] / C(x)[1,1] # == (1 - x) / x
+      if (S[2] > S[1] * c.slope) { # Limited by R1, so compute R2:
+        R[2] <- S[2] - (S[1] - R[1]) * c.slope
+        y <- y[1]
+      } else { # Limited by R2, so compute R1:
+        R[1] <- S[1] - (S[2] - R[2]) / c.slope
+        y <- y[2]
+      }
+    } else {
+      stop("Not yet implemented")
+      # Something like this would work -- work out all possible moves
+      # and take shortest line.  It should generalise out OK.
+      #   dS <- S - R[,1]
+      #   dy <- c(dS[1] * c.slope, dS[2])
+      #   dx <- c(dS[1], dS[2] / c.slope)
+      #   i <- which.min(dx^2 + dy^2)
+      #   eq <- S - c(dx[i], dy[i])
+    }
+
     list(R=drop(R), y=drop(y))
   }
 
@@ -150,15 +176,19 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
   #    D * (S - R) - c y r R / (K + R) == 0
   # As a quadratic with respect to "R":
   #    -D * R^2 + (D (S - K) - c r y) * R + D K S == 0
-  single_equilibrium_R <- function(x, y) {
-    K <- K(x)
-    C <- C(x)
-    ans <- quadratic_roots(-D, (D * (S - K) - C * r * y), D * K * S)
-    ans <- ans[ans >= 0 & ans <= S]
-    if (length(ans) != 1) {
-      stop("Did not find a unique solution")
+  single_equilibrium_R <- function(x, y, R0=S, force.numerical=FALSE) {
+    if (k == 1 && !force.numerical) {
+      K <- K(x)
+      C <- C(x)
+      ans <- quadratic_roots(-D, (D * (S - K) - C * r * y), D * K * S)
+      ans <- ans[ans >= 0 & ans <= S]
+      if (length(ans) != 1) {
+        stop("Did not find a unique solution")
+      }
+      ans
+    } else {
+      equilibrium_R(x, y, R0, "nleqslv")$R
     }
-    ans
   }
 
   # So, still no 'fitness' function here yet.  I guess it's dNdt, but
@@ -193,7 +223,7 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
 ##' one resource is inversely related to the performance on the second
 ##' resource.  As such, 'x' entirely determines a species (at least
 ##' for now).
-##' 
+##'
 ##' @rdname make_huisman_2001
 ##' @export
 ##' @param x (For \code{husiman_K_2} and \code{husiman_C_2}); species
