@@ -364,3 +364,7 @@ colMins <- function(x) {
 rowMins <- function(x) {
   apply(x, 1, min)
 }
+
+quadratic_roots <- function(a, b, c) {
+  (-b + c(-1, 1) * sqrt(b*b - 4*a*c))/(2 * a)
+}

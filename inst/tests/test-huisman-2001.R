@@ -15,7 +15,11 @@ test_that("Model components", {
   expect_that(names(m), equals(c("fitness",
                                  "equilibrium", "run", "parameters",
                                  "n", "k", "K", "C", "p", "Rstar",
-                                 "single_equilibrium")))
+                                 "single_equilibrium",
+                                 "single_equilibrium_R",
+                                 "run_fixed_density",
+                                 "equilibrium_R")))
+
   expect_that(m$fitness,     is_a("function"))
   expect_that(m$equilibrium, is_a("function"))
   expect_that(m$run,         is_a("function"))
@@ -27,6 +31,12 @@ test_that("Model components", {
   expect_that(m$p,           is_a("function"))
   expect_that(m$Rstar,       is_a("function"))
   expect_that(m$single_equilibrium,
+              is_a("function"))
+  expect_that(m$single_equilibrium_R,
+              is_a("function"))
+  expect_that(m$run_fixed_density,
+              is_a("function"))
+  expect_that(m$equilibrium_R,
               is_a("function"))
 })
 

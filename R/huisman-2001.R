@@ -38,17 +38,27 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
   }
   i.R <- seq_len(k)
 
-  dydt <- function(t, ode.y, x, ...) {
+  derivs <- function(t, ode.y, x, ...) {
     R <- ode.y[i.R]
     y <- ode.y[-i.R]
+    c(dRdt(R, y, x),
+      dydt(R, y, x))
+  }
+  derivs_R <- function(t, R, xy, ...) {
+    dRdt(R, xy$y, xy$x)
+  }
 
-    # Equation 3
-    min.p <- colMins(p(x, R))
-
-    # Equation 1b and 1a, respectively:
-    dRdt <- D * (S - R) - drop(C(x) %*% (y * min.p))
-    dydt <- y * (min.p - m)
-    c(dRdt, dydt)
+  # Equation 1b
+  dRdt <- function(R, y, x) {
+    D * (S - R) - drop(C(x) %*% (y * colMins(p(x, R))))
+  }
+  # Equation 1a
+  dydt <- function(R, y, x) {
+    y * (min.p(x, R) - m)
+  }
+  # Equation 3
+  min.p <- function(x, R) {
+    colMins(p(x, R))
   }
 
   # For fitness we want the *per-capita growth rate*; that is (min.p -
@@ -59,17 +69,28 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
   #
   # The issue that we have in terms of interface is that this doesn't
   # really depend on {x,y} as such, but on 'R', which is itself
-  # determined by {x,y}.
+  # determined by {x,y}.  So this function allows any R to be plugged
+  # in, and if none is given we compute the equilibrium resource
+  # density *holding density y constant*.
+  fitness <- function(x_new, x, y, R=NULL) {
+    if (is.null(R)) {
+      if (length(y) != 1) {
+        stop("Only works on a single species at the moment")
+      }
+      R <- single_equilibrium_R(x, y)
+    }
+    min.p(x_new, R) - m
+  }
+
+  # So what we want to do now is to break the model a bit and say
+  # "holding this density of individuals, compute what the equilibrium
+  # resource level is".  This is an odd thing to be doing, because
+  # it's out of equilibrium (the density is too high or too low) but
+  # we need it for a bunch of stuff.
   #
-  # So, we have issues here.  If we vary 'y', this causes a change in
-  # the resource availability but we can't easily run out just that
-  # equation.
-  #
-  # For now, assume that {x,y,R} at equilibrium.  Though the equation
-  # below does not actually require it to be true.
-  fitness <- function(x_new, x, y, R) {
-    min.p <- colMins(p(x_new, R))
-    min.p - m
+  run_fixed_density <- function(x, y, times, R0=S) {
+    res <- lsoda_nolist(R0, times, derivs_R, list(x=x, y=y))
+    list(t=times, R=res[,-1])
   }
 
   ## Given traits 'x' and initial densities 'y', compute the
@@ -78,13 +99,23 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
   equilibrium <- function(x, y, method="runsteady",
                           init_time=200,
                           max_time=1e5) {
-    res <- equilibrium_(dydt, x, initial.conditions(y),
+    res <- equilibrium_(derivs, x, initial.conditions(y),
                         method, init_time, max_time)
     list(R=res[i.R], y=res[-i.R])
   }
 
+  ## Given traits 'x' and initial densities 'y', compute the
+  ## equilibrium.  Return the equilibrium resource availability at the
+  ## same time.
+  equilibrium_R <- function(x, y, R0=S, method="runsteady",
+                            init_time=200, max_time=1e-5) {
+    res <- equilibrium_(derivs_R, list(x=x, y=y), R0,
+                        method, init_time, max_time)
+    list(R=res)
+  }
+
   run <- function(x, y, times) {
-    res <- lsoda_nolist(initial.conditions(y), times, dydt, x)[,-1,drop=FALSE]
+    res <- lsoda_nolist(initial.conditions(y), times, derivs, x)[,-1,drop=FALSE]
     list(t=times, R=res[,i.R], y=res[,-i.R])
   }
 
@@ -113,6 +144,23 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
     list(R=drop(R), y=drop(y))
   }
 
+  # Solve for the equilibrium level of a resource, given a vector of
+  # densities (and species traits).  Do do this, we solve dRdt == 0:
+  #    D (S - R) - c y p(R) == 0
+  #    D * (S - R) - c y r R / (K + R) == 0
+  # As a quadratic with respect to "R":
+  #    -D * R^2 + (D (S - K) - c r y) * R + D K S == 0
+  single_equilibrium_R <- function(x, y) {
+    K <- K(x)
+    C <- C(x)
+    ans <- quadratic_roots(-D, (D * (S - K) - C * r * y), D * K * S)
+    ans <- ans[ans >= 0 & ans <= S]
+    if (length(ans) != 1) {
+      stop("Did not find a unique solution")
+    }
+    ans
+  }
+
   # So, still no 'fitness' function here yet.  I guess it's dNdt, but
   # at equilibrium resource dynamics, which probably need providing.
   # Or if they're absent we could just run up from the initial
@@ -123,7 +171,10 @@ make_huisman_2001<- function(r=1, m=0.25, D=0.25, S=1,
               parameters   = parameters,
               # Lower level components that might be useful:
               n=n, k=k, K=K, C=C, p=p, Rstar=Rstar,
-              single_equilibrium=single_equilibrium)
+              single_equilibrium=single_equilibrium,
+              single_equilibrium_R=single_equilibrium_R,
+              run_fixed_density=run_fixed_density,
+              equilibrium_R=equilibrium_R)
   class(ret) <- "model"
   ret
 }
