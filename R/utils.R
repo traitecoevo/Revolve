@@ -368,3 +368,12 @@ rowMins <- function(x) {
 quadratic_roots <- function(a, b, c) {
   (-b + c(-1, 1) * sqrt(b*b - 4*a*c))/(2 * a)
 }
+
+get_attribute <- function(x, which) {
+  ret <- attr(x, which, TRUE)
+  if (is.null(ret)) {
+    stop(sprintf("attribute '%s' not found in '%s'",
+                 which, deparse(substitute(x))))
+  }
+  ret
+}
