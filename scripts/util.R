@@ -1,4 +1,4 @@
-
+# Because we use abline, we can't recycle here, which is annoying.
 abcline <- function(x, y, m, ...) {
   abline(y - x * m, m, ...)
 }

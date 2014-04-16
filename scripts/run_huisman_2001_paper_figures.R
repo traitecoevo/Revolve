@@ -38,17 +38,17 @@ C.fig2c <- rbind(c(0.04, 0.04, 0.07),
                  c(0.10, 0.08, 0.08),
                  c(0.10, 0.14, 0.10))
 
-mat.fig2a <- huisman_matrices(K.fig2, C.fig2a)
-mat.fig2b <- huisman_matrices(K.fig2, C.fig2b)
-mat.fig2c <- huisman_matrices(K.fig2, C.fig2c)
+mat.fig2a <- huisman_matrices_fixed(K.fig2, C.fig2a)
+mat.fig2b <- huisman_matrices_fixed(K.fig2, C.fig2b)
+mat.fig2c <- huisman_matrices_fixed(K.fig2, C.fig2c)
 
 S.fig2 <- c(6, 10, 14)
 y0.fig2 <- rep(1, 3)
 t.fig2 <- seq(0, 100, length=201)
 
-m.fig2 <- list(make_huisman_2001(S=S.fig2, matrices=mat.fig2a),
-               make_huisman_2001(S=S.fig2, matrices=mat.fig2b),
-               make_huisman_2001(S=S.fig2, matrices=mat.fig2c))
+m.fig2 <- list(make_huisman_2001(mat.fig2a, S=S.fig2),
+               make_huisman_2001(mat.fig2b, S=S.fig2),
+               make_huisman_2001(mat.fig2c, S=S.fig2))
 res.fig2 <- lapply(m.fig2, function(m) m$run(NULL, y0.fig2, t.fig2))
 
 plot_huisman(res.fig2, ylim=c(0, 100), lty=c(1, 2, 4))
@@ -72,13 +72,13 @@ S.fig3 <- c(6, 10, 14)
 y0.fig3 <- rep(1, 3)
 t.fig3 <- seq(0, 400, length=201)
 
-mat.fig3a <- huisman_matrices(K.fig3a, C.fig3)
-mat.fig3b <- huisman_matrices(K.fig3b, C.fig3)
-mat.fig3c <- huisman_matrices(K.fig3c, C.fig3)
+mat.fig3a <- huisman_matrices_fixed(K.fig3a, C.fig3)
+mat.fig3b <- huisman_matrices_fixed(K.fig3b, C.fig3)
+mat.fig3c <- huisman_matrices_fixed(K.fig3c, C.fig3)
 
-m.fig3 <- list(make_huisman_2001(S=S.fig3, matrices=mat.fig3a),
-               make_huisman_2001(S=S.fig3, matrices=mat.fig3b),
-               make_huisman_2001(S=S.fig3, matrices=mat.fig3c))
+m.fig3 <- list(make_huisman_2001(mat.fig3a, S=S.fig3),
+               make_huisman_2001(mat.fig3b, S=S.fig3),
+               make_huisman_2001(mat.fig3c, S=S.fig3))
 res.fig3 <- lapply(m.fig3, function(m) m$run(NULL, y0.fig3, t.fig3))
 
 # Note that this is different to the paper, because they run the last
@@ -106,11 +106,11 @@ y0.fig4 <- rep(1, 5)
 t.fig4a <- seq(0, 500, length=201)
 t.fig4b <- seq(0, 3000, length=201)
 
-mat.fig4a <- huisman_matrices(K.fig4a, C.fig4)
-mat.fig4b <- huisman_matrices(K.fig4b, C.fig4)
+mat.fig4a <- huisman_matrices_fixed(K.fig4a, C.fig4)
+mat.fig4b <- huisman_matrices_fixed(K.fig4b, C.fig4)
 
-m.fig4 <- list(make_huisman_2001(S=S.fig4, matrices=mat.fig4a),
-               make_huisman_2001(S=S.fig4, matrices=mat.fig4b))
+m.fig4 <- list(make_huisman_2001(mat.fig4a, S=S.fig4),
+               make_huisman_2001(mat.fig4b, S=S.fig4))
 
 res.fig4 <- list(m.fig4[[1]]$run(NULL, y0.fig4, t.fig4a),
                  m.fig4[[2]]$run(NULL, y0.fig4, t.fig4b))

@@ -8,8 +8,10 @@ library(plyr)
 
 source("util.R")
 
-m <- make_huisman_2001()
-xx <- c(0.3)
+mat <- huisman_matrices(huisman_mat_2_tradeoff, huisman_mat_2_tradeoff)
+m <- make_huisman_2001(mat)
+
+xx <- matrix(0.3, nrow=2)
 
 rs <- m$Rstar(xx)
 col <- "blue"
@@ -79,8 +81,8 @@ abline(h=eq2$R, lty=3, col=2)
 
 # Look at the fitness landscape: how does the instantaneous growth
 # rate look with respect to K (& C):
-x2 <- seq(0, 1, length=301)
+x2 <- rbind(seq(0, 1, length=301), xx[2])
 
-plot(x2, m$fitness(x2, xx, eq$y, eq$R), type="l")
+plot(x2[1,], m$fitness(x2, xx, eq$y, eq$R), type="l")
 abline(h=0, col="grey", lty=3)
 abline(v=xx, lty=2)

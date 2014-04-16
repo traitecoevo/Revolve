@@ -16,7 +16,9 @@ library(Revolve)
 library(plyr)
 library(numDeriv)
 
-m <- make_huisman_2001(S=1, matrices=huisman_matrices(huisman_mat_1))
+mat <- huisman_matrices(huisman_mat_1, huisman_mat_1)
+
+m <- make_huisman_2001(mat, S=1)
 x <- matrix(0.5, nrow=2)
 y0 <- 1
 t <- seq(0, 30, length=201)

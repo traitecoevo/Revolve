@@ -6,37 +6,16 @@
 library(Revolve)
 library(plyr)
 
-# So, to draw the cone of approach, we need to be able to put a line
-# through a point with a given slope, like abline (so rather than
-# specifying slope / intercept, we specify slope / {x,y}
-#
-# Because we use abline, we can't recycle here, which is annoying.
-abcline <- function(x, y, m, ...) {
-  abline(y - x * m, m, ...)
-}
-
-make.transparent <- function(col, opacity=.5) {
-  alpha <- opacity
-  if ( length(alpha) > 1 && any(is.na(alpha)) ) {
-    n <- max(length(col), length(alpha))
-    alpha <- rep(alpha, length.out=n)
-    col <- rep(col, length.out=n)
-    ok <- !is.na(alpha)
-    ret <- rep(NA, length(col))
-    ret[ok] <- add.alpha(col[ok], alpha[ok])
-    ret
-  } else {
-    tmp <- col2rgb(col)/255
-    rgb(tmp[1,], tmp[2,], tmp[3,], alpha=alpha)
-  }
-}
+source("util.R")
 
 ## 1. At an arbitrarily chosen set of initial densities and states,
 ## here is the approach to equilibrium, with the values from runsteady
 ## added.
 
-m <- make_huisman_2001()
-xx <- c(0.2, 0.7) 
+mat <- huisman_matrices(huisman_mat_2_tradeoff, huisman_mat_2_tradeoff)
+m <- make_huisman_2001(mat)
+xx <- rbind(c(0.2, 0.7),
+            c(0.2, 0.7))
 
 rs <- m$Rstar(xx)
 col <- c("blue", "red")
