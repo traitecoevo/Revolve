@@ -377,3 +377,42 @@ get_attribute <- function(x, which) {
   }
   ret
 }
+
+##' Variant of \code{abline} that puts a line through a point (x,y)
+##'
+##' Like \code{abline}, this does not support recycling (uses
+##' \code{abline} internally).
+##'
+##' @title Abline Through Point
+##' @param x X coordinate of point to pass through
+##' @param y Y coordinate of point to pass through
+##' @param m Slope of line
+##' @param ... Arguments passed to \code{abline} (e.g., col)
+##' @author Rich FitzJohn
+##' @export
+abcline <- function(x, y, m, ...) {
+  abline(y - x * m, m, ...)
+}
+
+##' Make colours semi-transparent
+##'
+##' @title Semi Transparent Colours
+##' @param col Vector of colours
+##' @param opacity Vector of scalar of opacity
+##' @author Rich FitzJohn
+##' @export
+make_transparent <- function(col, opacity=.5) {
+  alpha <- opacity
+  if ( length(alpha) > 1 && any(is.na(alpha)) ) {
+    n <- max(length(col), length(alpha))
+    alpha <- rep(alpha, length.out=n)
+    col <- rep(col, length.out=n)
+    ok <- !is.na(alpha)
+    ret <- rep(NA, length(col))
+    ret[ok] <- add.alpha(col[ok], alpha[ok])
+    ret
+  } else {
+    tmp <- col2rgb(col)/255
+    rgb(tmp[1,], tmp[2,], tmp[3,], alpha=alpha)
+  }
+}
