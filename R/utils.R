@@ -27,15 +27,21 @@ make_parameters <- function(defaults, where=new.env()) {
   }
   set <- function(parameters=list()) {
     check(parameters)
+    old <- get()[names(parameters)]
     for (v in names(parameters))
       assign(v, parameters[[v]], where)
+    invisible(old)
   }
   get <- function()
     structure(lapply(names, base::get, where), names=names)
 
   check.names(defaults)
   names <- names(defaults)
-  set(defaults)
+
+  local({
+    for (.v in names(defaults))
+      assign(.v, defaults[[.v]], where)
+  })
   rm(defaults)
 
   ret <- list(set=set, get=get, names=function() names)
@@ -409,10 +415,26 @@ make_transparent <- function(col, opacity=.5) {
     col <- rep(col, length.out=n)
     ok <- !is.na(alpha)
     ret <- rep(NA, length(col))
-    ret[ok] <- add.alpha(col[ok], alpha[ok])
+    ret[ok] <- make_transparent(col[ok], alpha[ok])
     ret
   } else {
     tmp <- col2rgb(col)/255
     rgb(tmp[1,], tmp[2,], tmp[3,], alpha=alpha)
   }
+}
+
+##' Mix two colours together
+##'
+##' @title Mix Two Colours together
+##' @param col1 Vector of colours
+##' @param col2 Vector of colours
+##' @param p AMount of colour vector 2 to take
+##' @author Rich FitzJohn
+##' @export
+mix <- function(col1, col2, p=0.5) {
+  m <- col2rgb(col1, alpha=TRUE)
+  m2 <- col2rgb(rep(col2, length=length(col1)), alpha=TRUE)
+  m3 <- (m * p + m2 * (1-p))/255
+  alpha <- if (all(m3[4,] == 1)) NULL else m3[4,]
+  rgb(m3[1,], m3[2,], m3[3,], alpha)
 }
