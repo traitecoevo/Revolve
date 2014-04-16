@@ -281,6 +281,7 @@ huisman_matrices_fixed <- function(K, C) {
                    i.K=integer(0), i.C=integer(0))
 }
 
+
 ##' @export
 ##' @rdname make_huisman_2001
 huisman_matrices <- function(K, C) {
@@ -302,4 +303,83 @@ huisman_matrices <- function(K, C) {
          C=function(x) C(x[i.C,,drop=FALSE]),
          n=NA, k=k, i.K=i.K, i.C=i.C)
   }
+}
+##' Plot Huisman ZNGIs
+##'
+##' Will change
+##' @title Plot Huisman ZNGIs
+##' @param m Huisman model, made by \code{make_huisman}
+##' @param x Matrix of parameters indicating species traits
+##' @param xlim X axis limits (resource 1)
+##' @param ylim Y axis limits (resource 2)
+##' @param col Vector of colours along species
+##' @author Rich FitzJohn
+##' @export
+huisman_plot <- function(m, x, xlim=c(0, 1), ylim=c(0, 1),
+                         col=seq_len(ncol(x))) {
+  if (m$k != 2) {
+    stop("Can only plot 2 resource case at the moment")
+  }
+  n <- ncol(x)
+  col <- rep(col, length.out=n)
+
+  rs <- m$Rstar(x)
+  plot(NA, xlim=xlim, ylim=ylim, xlab="R1", ylab="R2")
+  abline(v=rs[1,], lty=3, col=col)
+  abline(h=rs[2,], lty=3, col=col)
+  segments(rs[1,], rs[2,], rs[1,], par("usr")[4], col=col)
+  segments(rs[1,], rs[2,], par("usr")[2], rs[2,], col=col)
+
+  R.eq <- apply(rs, 1, max)
+  # This only makes sense for some cases?
+  points(R.eq[1], R.eq[2], pch=19)
+
+  C <- m$C(x)
+  for (i in seq_len(n)) {
+    abcline(R.eq[1], R.eq[2], C[2,i] / C[1,i], col=col[i], lty=2)
+  }
+}
+
+##' @export
+##' @rdname huisman_plot
+##' @param y Densities of the species
+##' @param eps Density at which species are considered extinct
+##' @param t_max Maximum time to run simulation until
+##' @param t_len Number of time intervals to run simulation over
+##' @param S Resource supply rates (and initial resource levels)
+##' @param col_died Colour of communities that go extinct.
+huisman_trajectory <- function(m, x, y=rep(1, ncol(x)),
+                               col=seq_len(ncol(x)), eps=1e-6,
+                               t_max=100, t_len=101, S=NULL,
+                               col_died="grey") {
+  if (ncol(x) > 2) {
+    stop("Only working for up to two species so far")
+  }
+  
+  t <- seq(0, t_max, length.out=t_len)
+
+  if (!is.null(S)) {
+    if (length(S) != m$k)
+      stop("Invalid length S")
+    op <- m$parameters$set(list(S=S))
+    on.exit(m$parameters$set(op))
+  }
+
+  eq <- m$equilibrium(x, y)
+  tr <- m$run(x, y, t)
+  S <- m$parameters$get()[["S"]]
+
+  survived <- eq$y > 1e-6
+
+  if (sum(survived) == 1) {
+    col <- col[which(survived)]
+  } else if (sum(survived) == 2) {
+    col <- mix(col[1], col[2])
+  } else {
+    col <- col_died
+  }
+
+  lines(tr$R[,1], tr$R[,2], lty=2, col=col)
+  points(c(S[1], eq$R[1]),
+         c(S[2], eq$R[2]), pch=19, col=col, cex=.5)
 }
