@@ -6,8 +6,8 @@ xx <- rbind(c(0.2, 0.7),
 yy <- c(0.3, 0.7)
 tt <- seq(0, 300, length=301)
 
-mat <- huisman_matrices(huisman_mat_2_tradeoff, huisman_mat_2_tradeoff)
-m <- make_huisman_2001(mat)
+mat <- rstar_matrices(rstar_mat_2_tradeoff, rstar_mat_2_tradeoff)
+m <- make_rstar(mat)
 
 ## 1. At an arbitrarily chosen set of initial densities and states,
 ## here is the approach to equilibrium, with the values from runsteady

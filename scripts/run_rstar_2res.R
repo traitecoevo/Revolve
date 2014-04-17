@@ -8,8 +8,8 @@ library(plyr)
 ## First, trajectories in the two resource model for one and two
 ## species.
 
-mat <- huisman_matrices(huisman_mat_2_tradeoff, huisman_mat_2_tradeoff)
-m <- make_huisman_2001(mat)
+mat <- rstar_matrices(rstar_mat_2_tradeoff, rstar_mat_2_tradeoff)
+m <- make_rstar(mat)
 col_died <- make_transparent("grey", .2)
 
 ## One species:
@@ -17,9 +17,9 @@ x1 <- matrix(0.2, nrow=2)
 col1 <- "blue"
 col1_tr <- make_transparent(col1, .2)
 
-huisman_plot(m, x1, col=col1)
+rstar_plot(m, x1, col=col1)
 for (i in 1:100) {
-  huisman_trajectory(m, x1, col=col1_tr, col_died=col_died, S=runif(2))
+  rstar_trajectory(m, x1, col=col1_tr, col_died=col_died, S=runif(2))
 }
 
 ## Two species:
@@ -27,9 +27,9 @@ x2 <- cbind(x1, 0.7, deparse.level=0)
 col2 <- c(col1, "red")
 col2_tr <- make_transparent(col2, .2)
 
-huisman_plot(m, x2, col=col2)
+rstar_plot(m, x2, col=col2)
 for (i in 1:100) {
-  huisman_trajectory(m, x2, col=col2_tr, col_died=col_died, S=runif(2))
+  rstar_trajectory(m, x2, col=col2_tr, col_died=col_died, S=runif(2))
 }
 
 ## Now, displace the single species system from equilibrium and look

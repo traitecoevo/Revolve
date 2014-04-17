@@ -1,18 +1,18 @@
 source("helper-Revolve.R")
 
-context("Huisman and Weissing 1999")
+context("R star")
 
-mat2 <- huisman_matrices(huisman_mat_2, huisman_mat_2)
+mat2 <- rstar_matrices(rstar_mat_2, rstar_mat_2)
 
 test_that("Model parameters", {
-  m <- make_huisman_2001(mat2)
+  m <- make_rstar(mat2)
   defaults <- list(r=1, m=1/4, D=1/4, S=c(1, 1))
   expect_that(names(m$parameters), equals(names(defaults)))
   expect_that(m$parameters$get(),  equals(defaults))
 })
 
 test_that("Model components", {
-  m <- make_huisman_2001(mat2)
+  m <- make_rstar(mat2)
   expect_that(names(m), equals(c("fitness",
                                  "equilibrium", "run", "parameters",
                                  "n", "k", "K", "C", "p", "Rstar",
@@ -48,7 +48,7 @@ test_that("Constant matrices", {
   C1 <- matrix(0.1, 1, 1)
   x1 <- matrix(nrow=0, ncol=5)
 
-  mat <- huisman_matrices(K1, C1)
+  mat <- rstar_matrices(K1, C1)
 
   expect_that(mat$k, equals(1L))
   expect_that(mat$n, equals(NA))
@@ -62,7 +62,7 @@ test_that("Constant matrices", {
   C2 <- matrix(runif(2), 2, 1)
   x2 <- matrix(nrow=0, ncol=5)
 
-  mat <- huisman_matrices(K2, C2)
+  mat <- rstar_matrices(K2, C2)
 
   expect_that(mat$k, equals(2L))
   expect_that(mat$n, equals(NA))
@@ -77,7 +77,7 @@ test_that("Fixed matries", {
   K <- matrix(runif(4), 2, 2)
   C <- matrix(runif(4), 2, 2)
 
-  mat <- huisman_matrices_fixed(K, C)
+  mat <- rstar_matrices_fixed(K, C)
 
   expect_that(mat$k, equals(2L))
   expect_that(mat$n, equals(2L))
@@ -98,7 +98,7 @@ test_that("Fixed matries", {
 })
 
 test_that("Identity matrices", {
-  mat <- huisman_matrices(huisman_mat_1, huisman_mat_1)
+  mat <- rstar_matrices(rstar_mat_1, rstar_mat_1)
 
   expect_that(mat$k, equals(1L))
   expect_that(mat$n, equals(NA))
@@ -109,7 +109,7 @@ test_that("Identity matrices", {
   expect_that(mat$K(x1), equals(x1[mat$i.K,,drop=FALSE]))
   expect_that(mat$C(x1), equals(x1[mat$i.C,,drop=FALSE]))
 
-  mat <- huisman_matrices(huisman_mat_2, huisman_mat_2)
+  mat <- rstar_matrices(rstar_mat_2, rstar_mat_2)
 
   expect_that(mat$k, equals(2L))
   expect_that(mat$n, equals(NA))
@@ -125,8 +125,8 @@ test_that("Mixed identity and constant", {
   K1 <- matrix(0.5, 1, 1)
   C1 <- matrix(0.1, 1, 1)
 
-  mat.K <- huisman_matrices(huisman_mat_1, C1)
-  mat.C <- huisman_matrices(K1, huisman_mat_1)
+  mat.K <- rstar_matrices(rstar_mat_1, C1)
+  mat.C <- rstar_matrices(K1, rstar_mat_1)
 
   expect_that(mat.K$k, equals(1L))
   expect_that(mat.K$n, equals(NA))

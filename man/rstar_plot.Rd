@@ -1,15 +1,15 @@
-\name{huisman_plot}
-\alias{huisman_plot}
-\alias{huisman_trajectory}
-\title{Plot Huisman ZNGIs}
+\name{rstar_plot}
+\alias{rstar_plot}
+\alias{rstar_trajectory}
+\title{Plot Rstar ZNGIs}
 \usage{
-huisman_plot(m, x, xlim = c(0, 1), ylim = c(0, 1), col = seq_len(ncol(x)))
+rstar_plot(m, x, xlim = c(0, 1), ylim = c(0, 1), col = seq_len(ncol(x)))
 
-huisman_trajectory(m, x, y = rep(1, ncol(x)), col = seq_len(ncol(x)),
+rstar_trajectory(m, x, y = rep(1, ncol(x)), col = seq_len(ncol(x)),
   eps = 1e-06, t_max = 100, t_len = 101, S = NULL, col_died = "grey")
 }
 \arguments{
-  \item{m}{Huisman model, made by \code{make_huisman}}
+  \item{m}{Rstar model, made by \code{make_rstar}}
 
   \item{x}{Matrix of parameters indicating species traits}
 
@@ -35,7 +35,7 @@ huisman_trajectory(m, x, y = rep(1, ncol(x)), col = seq_len(ncol(x)),
   \item{col_died}{Colour of communities that go extinct.}
 }
 \description{
-Plot Huisman ZNGIs
+Plot Rstar ZNGIs
 }
 \details{
 Will change
