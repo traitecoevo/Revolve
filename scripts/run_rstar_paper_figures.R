@@ -44,14 +44,14 @@ mat.fig2a <- rstar_matrices_fixed(K.fig2, C.fig2a)
 mat.fig2b <- rstar_matrices_fixed(K.fig2, C.fig2b)
 mat.fig2c <- rstar_matrices_fixed(K.fig2, C.fig2c)
 
+sys.fig2 <- sys(NULL, rep(1, 3))
 S.fig2 <- c(6, 10, 14)
-y0.fig2 <- rep(1, 3)
 t.fig2 <- seq(0, 100, length=201)
 
 m.fig2 <- list(make_rstar(mat.fig2a, S=S.fig2),
                make_rstar(mat.fig2b, S=S.fig2),
                make_rstar(mat.fig2c, S=S.fig2))
-res.fig2 <- lapply(m.fig2, function(m) m$run(NULL, y0.fig2, t.fig2))
+res.fig2 <- lapply(m.fig2, function(m) m$run(sys.fig2, t.fig2))
 
 plot_huisman(res.fig2, ylim=c(0, 100), lty=c(1, 2, 4))
 
@@ -70,8 +70,8 @@ C.fig3 <- rbind(c(0.04, 0.07, 0.04),
                 c(0.08, 0.08, 0.10),
                 c(0.14, 0.10, 0.10))
 
+sys.fig3 <- sys(NULL, rep(1, 3))
 S.fig3 <- c(6, 10, 14)
-y0.fig3 <- rep(1, 3)
 t.fig3 <- seq(0, 400, length=201)
 
 mat.fig3a <- rstar_matrices_fixed(K.fig3a, C.fig3)
@@ -81,7 +81,7 @@ mat.fig3c <- rstar_matrices_fixed(K.fig3c, C.fig3)
 m.fig3 <- list(make_rstar(mat.fig3a, S=S.fig3),
                make_rstar(mat.fig3b, S=S.fig3),
                make_rstar(mat.fig3c, S=S.fig3))
-res.fig3 <- lapply(m.fig3, function(m) m$run(NULL, y0.fig3, t.fig3))
+res.fig3 <- lapply(m.fig3, function(m) m$run(sys.fig3, t.fig3))
 
 # Note that this is different to the paper, because they run the last
 # case out to to 2000, not 400.  But close enough for now.
@@ -103,8 +103,8 @@ C.fig4 <- rbind(c(0.04, 0.07, 0.04, 0.04, 0.04),
 K.fig4b <- K.fig4a
 K.fig4b[rbind(c(1,2), c(2,3), c(3,4), c(4,5), c(5,1))] <- 0.6
 
+sys.fig4 <- sys(NULL, rep(1, 5))
 S.fig4 <- c(6, 10, 14, 4, 9)
-y0.fig4 <- rep(1, 5)
 t.fig4a <- seq(0, 500, length=201)
 t.fig4b <- seq(0, 3000, length=201)
 
@@ -114,8 +114,8 @@ mat.fig4b <- rstar_matrices_fixed(K.fig4b, C.fig4)
 m.fig4 <- list(make_rstar(mat.fig4a, S=S.fig4),
                make_rstar(mat.fig4b, S=S.fig4))
 
-res.fig4 <- list(m.fig4[[1]]$run(NULL, y0.fig4, t.fig4a),
-                 m.fig4[[2]]$run(NULL, y0.fig4, t.fig4b))
+res.fig4 <- list(m.fig4[[1]]$run(sys.fig4, t.fig4a),
+                 m.fig4[[2]]$run(sys.fig4, t.fig4b))
 # Looks OK except that we start overstepping at some point and drive
 # numbers negative, but apart from that we're all good really.
 plot_huisman(res.fig4, ylim=c(0, 100))

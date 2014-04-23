@@ -3,23 +3,21 @@
 \alias{rstar_trajectory}
 \title{Plot Rstar ZNGIs}
 \usage{
-rstar_plot(m, x, xlim = c(0, 1), ylim = c(0, 1), col = seq_len(ncol(x)))
+rstar_plot(m, sys, xlim = c(0, 1), ylim = c(0, 1), col = seq_len(ncol(x)))
 
-rstar_trajectory(m, x, y = rep(1, ncol(x)), col = seq_len(ncol(x)),
-  eps = 1e-06, t_max = 100, t_len = 101, S = NULL, col_died = "grey")
+rstar_trajectory(m, sys, col = seq_len(ncol(sys$x)), eps = 1e-06,
+  t_max = 100, t_len = 101, S = NULL, col_died = "grey")
 }
 \arguments{
   \item{m}{Rstar model, made by \code{make_rstar}}
 
-  \item{x}{Matrix of parameters indicating species traits}
+  \item{sys}{Model state (x is used)}
 
   \item{xlim}{X axis limits (resource 1)}
 
   \item{ylim}{Y axis limits (resource 2)}
 
   \item{col}{Vector of colours along species}
-
-  \item{y}{Densities of the species}
 
   \item{eps}{Density at which species are considered
   extinct}

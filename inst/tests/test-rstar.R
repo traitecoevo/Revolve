@@ -19,7 +19,8 @@ test_that("Model components", {
                                  "single_equilibrium",
                                  "single_equilibrium_R",
                                  "run_fixed_density",
-                                 "equilibrium_R")))
+                                 "equilibrium_R",
+                                 "derivs")))
 
   expect_that(m$fitness,     is_a("function"))
   expect_that(m$equilibrium, is_a("function"))
@@ -38,6 +39,8 @@ test_that("Model components", {
   expect_that(m$run_fixed_density,
               is_a("function"))
   expect_that(m$equilibrium_R,
+              is_a("function"))
+  expect_that(m$derivs,
               is_a("function"))
 })
 
@@ -145,6 +148,22 @@ test_that("Mixed identity and constant", {
 
   expect_that(mat.K$C(x), equals(matrix(C1, 1, ncol(x))))
   expect_that(mat.C$K(x), equals(matrix(K1, 1, ncol(x))))
+})
+
+test_that("One resource", {
+  m <- make_rstar(rstar_matrices(rstar_mat_1, rstar_mat_1), S=1)
+  sys1 <- sys(matrix(0.5, nrow=2), y=1)
+
+  ## Find the equilibrium with a single species (note that this is
+  ## quite different to the D+D & Kisdi models because this is not the
+  ## singular position for the model, but the demographic/resource
+  ## equilibrium given a particular species trait).
+  eq <- m$single_equilibrium(sys1$x)
+  expect_that(m$derivs(0, c(eq$R, eq$y), sys1), equals(c(0, 0)))
+
+  ## Computed numerically:
+  eq2 <- m$equilibrium(sys1)
+  expect_that(eq2, equals(eq[names(eq2)]))
 })
 
 # Results to check:

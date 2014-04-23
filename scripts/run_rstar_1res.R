@@ -13,51 +13,58 @@
 # and move towards understanding how the competition function might
 # look like.
 library(Revolve)
-library(plyr)
-library(numDeriv)
 
 mat <- rstar_matrices(rstar_mat_1, rstar_mat_1)
 
 m <- make_rstar(mat, S=1)
-x <- matrix(0.5, nrow=2)
-y0 <- 1
+sys0 <- sys(matrix(0.5, nrow=2), 1)
 t <- seq(0, 30, length=201)
 
-res <- m$run(x, y0, t)
+res <- m$run(sys0, t)
 matplot(res$t, cbind(res$R, res$y), type="l", lty=1:2, xlab="Time",
         ylab="Abundance (red), Resource (black)")
 
-eq <- m$single_equilibrium(x)
-abline(h=unlist(eq), col=1:2, lty=3)
+eq <- m$single_equilibrium(sys0$x)
+abline(h=unlist(eq[c("R", "y")]), col=1:2, lty=3)
 
 # Displace the solution from equilibrium and look at the new level of
 # resources:
 dy <- eq$y * 0.1
-res1 <- m$run_fixed_density(x, eq$y - dy, t, eq$R)
-res2 <- m$run_fixed_density(x, eq$y + dy, t, eq$R)
-eq1 <- m$equilibrium_R(x, eq$y - dy)
-eq2 <- m$equilibrium_R(x, eq$y + dy)
-matplot(res1$t, cbind(res1$R, res2$R), type="l", col=2:3)
-abline(h=c(eq$R, eq1$R, eq2$R), col=1:3, lty=3)
+
+sys.y1 <- modifyList(eq, list(y=eq$y - dy))
+sys.y2 <- modifyList(eq, list(y=eq$y + dy))
+
+res.y1 <- m$run_fixed_density(sys.y1, t)
+res.y2 <- m$run_fixed_density(sys.y2, t)
+
+eq.y1 <- m$equilibrium_R(sys.y1)
+eq.y2 <- m$equilibrium_R(sys.y2)
+
+matplot(res.y1$t, cbind(res.y1$R, res.y2$R), type="l", col=2:3)
+abline(h=c(eq$R, eq.y1$R, eq.y2$R), col=1:3, lty=3)
 
 # Next, we start working towards the instantaneous growth rate of a
 # new type at this equilibrium
 
 # Look at the fitness landscape: how does the instantaneous growth
 # rate look with respect to K:
-xx <- seq(0, 1, length=101)
-x2 <- rbind(xx, x[2], deparse.level=0) # K varying
-x3 <- rbind(x[2], xx, deparse.level=0) # C varying
+x.mutant <- seq(0, 1, length=101)
+x.K <- rbind(x.mutant, eq$x[2], deparse.level=0) # K varying
+x.C <- rbind(eq$x[2], x.mutant, deparse.level=0) # C varying
 
-plot(xx, m$fitness(x2, x, eq$y, eq$R), type="l")
+plot(x.mutant, m$fitness(x.K, eq$x, eq$y, eq$R), type="l",
+     xlab="Trait (K)", ylab="Fitness")
 abline(h=0, col="grey", lty=3)
-abline(v=x[1], lty=2)
+abline(v=eq$x[1], lty=2)
 
 # Fitness does not vary with respect to c when rare:
-plot(xx, m$fitness(x3, x, eq$y, eq$R), type="l")
+plot(x.mutant, m$fitness(x.C, eq$x, eq$y, eq$R), type="l",
+     xlab="Trait (C)", ylab="Fitness")
 abline(h=0, col="grey", lty=3)
 
 # Fitness in an empty environment:
-plot(xx, m$fitness(x2, x, 0, m$parameters$get()[["S"]]), type="l")
+plot(x.mutant,
+     m$fitness(x.K, eq$x, 0, m$parameters$get()[["S"]]), type="l",
+     xlab="Trait (K)", ylab="Fitness in an empty environment")
 abline(h=0, col="grey", lty=3)
-abline(v=x[1], lty=2)
+abline(v=eq$x[1], lty=2)

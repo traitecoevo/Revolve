@@ -334,11 +334,26 @@ run <- function(sys, n_steps, step, cleanup=identity, print_every=0) {
   res
 }
 
-sys <- function(x, y, t=0) {
-  if (length(x) != length(y)) {
+##' Helper function for constructing model systems
+##' @title Construct Model System
+##' @param x Species traits
+##' @param y Species densities
+##' @param ... Additional system properties (named!)
+##' @param t Time (optional)
+##' @author Rich FitzJohn
+##' @export
+sys <- function(x, y, ..., t=0) {
+  ret <- list(x=x, y=y, ..., t=t)
+  check_sys(ret)
+  ret
+}
+
+check_sys <- function(sys) {
+  if (is.vector(sys$x) && length(sys$x) != length(sys$y)) {
     stop("Lengths of x and y must be the same")
+  } else if (is.matrix(sys$x) && ncol(sys$x) != length(sys$y)) {
+    stop("Number of columns x and length of y must be the same")
   }
-  list(x=x, y=y, t=t)
 }
 
 ##' Split a community into two parts, naively.

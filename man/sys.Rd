@@ -1,0 +1,22 @@
+\name{sys}
+\alias{sys}
+\title{Construct Model System}
+\usage{
+sys(x, y, ..., t = 0)
+}
+\arguments{
+  \item{x}{Species traits}
+
+  \item{y}{Species densities}
+
+  \item{...}{Additional system properties (named!)}
+
+  \item{t}{Time (optional)}
+}
+\description{
+Helper function for constructing model systems
+}
+\author{
+Rich FitzJohn
+}
+

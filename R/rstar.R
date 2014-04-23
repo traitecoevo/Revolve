@@ -34,14 +34,18 @@ make_rstar <- function(matrices, r=1, m=0.25, D=0.25, S=1) {
   }
   i.R <- seq_len(k)
 
-  derivs <- function(t, ode.y, x, ...) {
+  # Derivatives of both R and y.
+  derivs <- function(t, ode.y, sys, ...) {
     R <- ode.y[i.R]
     y <- ode.y[-i.R]
-    c(dRdt(R, y, x),
-      dydt(R, y, x))
+    c(dRdt(R, y, sys$x),
+      dydt(R, y, sys$x))
   }
-  derivs_R <- function(t, R, xy, ...) {
-    dRdt(R, xy$y, xy$x)
+
+  # Derivatives with respect to R (note that this ignores any R within
+  # sys)
+  derivs_R <- function(t, R, sys, ...) {
+    dRdt(R, sys$y, sys$x)
   }
 
   # Equation 1b
@@ -84,42 +88,31 @@ make_rstar <- function(matrices, r=1, m=0.25, D=0.25, S=1) {
   # it's out of equilibrium (the density is too high or too low) but
   # we need it for a bunch of stuff.
   #
-  run_fixed_density <- function(x, y, times, R0=S) {
-    res <- lsoda_nolist(R0, times, derivs_R, list(x=x, y=y))
+  run_fixed_density <- function(sys, times) {
+    res <- lsoda_nolist(R0_from_sys(sys), times, derivs_R, sys)
     list(t=times, R=res[,-1])
   }
 
   ## Given traits 'x' and initial densities 'y', compute the
   ## equilibrium.  Return the equilibrium resource availability at the
   ## same time.
-  equilibrium <- function(x, y, method="runsteady",
-                          init_time=200,
-                          max_time=1e5) {
-    res <- equilibrium_(derivs, x, initial.conditions(y),
-                        method, init_time, max_time)
-    list(R=res[i.R], y=res[-i.R])
+  equilibrium <- function(sys, ...) {
+    res <- equilibrium_(derivs, sys, initial.conditions(sys$y), ...)
+    modifyList(sys, list(y=res[-i.R], R=res[i.R]))
   }
 
   ## Given traits 'x' and initial densities 'y', compute the
   ## equilibrium.  Return the equilibrium resource availability at the
   ## same time.
-  equilibrium_R <- function(x, y, R0=S, method="runsteady",
-                            init_time=200, max_time=1e-5) {
-    res <- equilibrium_(derivs_R, list(x=x, y=y), R0,
-                        method, init_time, max_time)
-    list(R=res)
+  equilibrium_R <- function(sys, ...) {
+    modifyList(sys,
+               list(R=equilibrium_(derivs_R, sys, R0_from_sys(sys))))
   }
 
-  run <- function(x, y, times) {
-    res <- lsoda_nolist(initial.conditions(y), times, derivs, x)[,-1,drop=FALSE]
-    list(t=times, R=res[,i.R], y=res[,-i.R])
-  }
-
-  initial.conditions <- function(y0) {
-    if (!is.na(n) && length(y0) != n) {
-      stop("Invalid length initial conditions")
-    }
-    c(S, y0)
+  run <- function(sys, times) {
+    ode.y <- initial.conditions(sys$y)
+    res <- lsoda_nolist(ode.y, times, derivs, sys)[,-1,drop=FALSE]
+    list(t=times, x=sys$x, y=res[,-i.R], R=res[,i.R])
   }
 
   # Equation 2 in the paper:
@@ -163,7 +156,18 @@ make_rstar <- function(matrices, r=1, m=0.25, D=0.25, S=1) {
       #   eq <- S - c(dx[i], dy[i])
     }
 
-    list(R=drop(R), y=drop(y))
+    sys(x, drop(y), R=drop(R))
+  }
+
+  ## Little internal helpers:
+  initial.conditions <- function(y0) {
+    if (!is.na(n) && length(y0) != n) {
+      stop("Invalid length initial conditions")
+    }
+    c(S, y0)
+  }
+  R0_from_sys <- function(sys) {
+    if (is.null(sys$R)) S else sys$R
   }
 
   # Solve for the equilibrium level of a resource, given a vector of
@@ -172,10 +176,11 @@ make_rstar <- function(matrices, r=1, m=0.25, D=0.25, S=1) {
   #    D * (S - R) - c y r R / (K + R) == 0
   # As a quadratic with respect to "R":
   #    -D * R^2 + (D (S - K) - c r y) * R + D K S == 0
-  single_equilibrium_R <- function(x, y, R0=S, force.numerical=FALSE) {
+  single_equilibrium_R <- function(sys, force.numerical=FALSE) {
     if (k == 1 && !force.numerical) {
-      K <- K(x)
-      C <- C(x)
+      K <- K(sys$x)
+      C <- C(sys$x)
+      y <- sys$y
       ans <- quadratic_roots(-D, (D * (S - K) - C * r * y), D * K * S)
       ans <- ans[ans >= 0 & ans <= S]
       if (length(ans) != 1) {
@@ -183,14 +188,10 @@ make_rstar <- function(matrices, r=1, m=0.25, D=0.25, S=1) {
       }
       ans
     } else {
-      equilibrium_R(x, y, R0, "nleqslv")$R
+      equilibrium_R(sys, "nleqslv")$R
     }
   }
 
-  # So, still no 'fitness' function here yet.  I guess it's dNdt, but
-  # at equilibrium resource dynamics, which probably need providing.
-  # Or if they're absent we could just run up from the initial
-  # conditions.
   ret <- list(fitness = fitness,
               equilibrium  = equilibrium,
               run          = run,
@@ -200,7 +201,8 @@ make_rstar <- function(matrices, r=1, m=0.25, D=0.25, S=1) {
               single_equilibrium=single_equilibrium,
               single_equilibrium_R=single_equilibrium_R,
               run_fixed_density=run_fixed_density,
-              equilibrium_R=equilibrium_R)
+              equilibrium_R=equilibrium_R,
+              derivs=derivs)
   class(ret) <- "model"
   ret
 }
@@ -306,17 +308,18 @@ rstar_matrices <- function(K, C) {
 ##' Will change
 ##' @title Plot Rstar ZNGIs
 ##' @param m Rstar model, made by \code{make_rstar}
-##' @param x Matrix of parameters indicating species traits
+##' @param sys Model state (x is used)
 ##' @param xlim X axis limits (resource 1)
 ##' @param ylim Y axis limits (resource 2)
 ##' @param col Vector of colours along species
 ##' @author Rich FitzJohn
 ##' @export
-rstar_plot <- function(m, x, xlim=c(0, 1), ylim=c(0, 1),
+rstar_plot <- function(m, sys, xlim=c(0, 1), ylim=c(0, 1),
                        col=seq_len(ncol(x))) {
   if (m$k != 2) {
     stop("Can only plot 2 resource case at the moment")
   }
+  x <- sys$x
   n <- ncol(x)
   col <- rep(col, length.out=n)
 
@@ -339,17 +342,17 @@ rstar_plot <- function(m, x, xlim=c(0, 1), ylim=c(0, 1),
 
 ##' @export
 ##' @rdname rstar_plot
-##' @param y Densities of the species
 ##' @param eps Density at which species are considered extinct
 ##' @param t_max Maximum time to run simulation until
 ##' @param t_len Number of time intervals to run simulation over
 ##' @param S Resource supply rates (and initial resource levels)
 ##' @param col_died Colour of communities that go extinct.
-rstar_trajectory <- function(m, x, y=rep(1, ncol(x)),
-                             col=seq_len(ncol(x)), eps=1e-6,
+rstar_trajectory <- function(m, sys,
+                             col=seq_len(ncol(sys$x)), eps=1e-6,
                              t_max=100, t_len=101, S=NULL,
                              col_died="grey") {
-  if (ncol(x) > 2) {
+  check_sys(sys)
+  if (ncol(sys$x) > 2) {
     stop("Only working for up to two species so far")
   }
   
@@ -362,8 +365,8 @@ rstar_trajectory <- function(m, x, y=rep(1, ncol(x)),
     on.exit(m$parameters$set(op))
   }
 
-  eq <- m$equilibrium(x, y)
-  tr <- m$run(x, y, t)
+  eq <- m$equilibrium(sys)
+  tr <- m$run(sys, t)
   S <- m$parameters$get()[["S"]]
 
   survived <- eq$y > 1e-6
