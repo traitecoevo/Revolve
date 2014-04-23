@@ -85,7 +85,6 @@ test_that("Components work", {
 ## For a single case at equilibrium density, the growth rate should be
 ## zero:
 test_that("Single species equilibrium", {
-  source("helper-Revolve.R")
   m <- make_dieckmann_1999()
   p <- m$parameters$get()
 

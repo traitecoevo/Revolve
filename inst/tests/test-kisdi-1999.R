@@ -21,11 +21,12 @@ test_that("Model components", {
   m <- make_kisdi_1999()
   expect_that(names(m), equals(c("fitness", "competition",
                                  "intrinsic_growth", "parameters",
-                                 "single_equilibrium")))
+                                 "equilibrium", "single_equilibrium")))
   expect_that(m$fitness,            is_a("function"))
   expect_that(m$competition,        is_a("function"))
   expect_that(m$intrinsic_growth,   is_a("function"))
   expect_that(m$parameters,         is_a("parameters"))
+  expect_that(m$equilibrium,        is_a("function"))
   expect_that(m$single_equilibrium, is_a("function"))
 })
 
@@ -90,7 +91,7 @@ test_that("Components work", {
   expect_that(m$fitness(xp2, x, y), equals(w2.cmp))
 })
 
-test_that("Single species equilibrium", {
+test_that("Single species equilibrium (linear)", {
   m <- make_kisdi_1999()
   eq <- m$single_equilibrium()
 
@@ -105,6 +106,15 @@ test_that("Single species equilibrium", {
   ## Local minimum (branching point):
   expect_that(hessian(function(x) m$fitness(x, eq$x, eq$y), eq$x),
               is_greater_than(0))
+
+  ## We can also get density using the equilibrium function:
+  eq2 <- m$equilibrium(list(x=eq$x, y=1))
+  expect_that(eq2, equals(eq))
+
+  ## Multispecies equilibrium
+  eq2 <- m$equilibrium(sys_split(eq, 0.05))
+  expect_that(m$fitness(eq2$x, eq2$x, eq2$y),
+              equals(c(0, 0), tolerance=1e-7))
 })
 
 test_that("Single species equilibrium (gaussian)", {
@@ -122,4 +132,13 @@ test_that("Single species equilibrium (gaussian)", {
   ## Local minimum (branching point):
   expect_that(hessian(function(x) m$fitness(x, eq$x, eq$y), eq$x),
               is_greater_than(0))
+
+  ## We can also get density using the equilibrium function:
+  eq2 <- m$equilibrium(list(x=eq$x, y=1))
+  expect_that(eq2, equals(eq))
+
+  ## Multispecies equilibrium
+  eq2 <- m$equilibrium(sys_split(eq, 0.05))
+  expect_that(m$fitness(eq2$x, eq2$x, eq2$y),
+              equals(c(0, 0), tolerance=2e-7))
 })

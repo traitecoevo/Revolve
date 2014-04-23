@@ -35,6 +35,9 @@ make_kisdi_1999 <- function(intrinsic_growth_type="linear", c=2, v=1.2, k=4,
   competition <- function(x_new, x)
     c * (1 - 1 / (1 + v * exp(- k * (-outer(x, x_new, "-")))))
 
+  equilibrium <- function(sys, ...) {
+    equilibrium_sys(sys, fitness, ...)
+  }
   single_equilibrium <- function() {
     switch(intrinsic_growth_type,
            linear=single_equilibrium_linear,
@@ -82,6 +85,7 @@ make_kisdi_1999 <- function(intrinsic_growth_type="linear", c=2, v=1.2, k=4,
               competition        = competition,
               intrinsic_growth   = intrinsic_growth,
               parameters         = parameters,
+              equilibrium        = equilibrium,
               single_equilibrium = single_equilibrium)
   class(ret) <- "model"
   ret
