@@ -8,6 +8,7 @@ install:
   - ./travis-tool.sh install_deps
 script:
   - ./travis-tool.sh run_tests
+  - R CMD INSTALL .
   - make -C scripts runall
 
 on_failure:
