@@ -71,37 +71,39 @@ eq2 <- function(x, m, y=c(.5, .5), ...) {
 
 # This is terribly slow at the moment.  No effort taken to speed it
 # up.
-x2 <- as.matrix(expand.grid(x1=xx, x2=xx))
-res <- alply(x2, 1, eq2, m, .progress="text")
+if (interactive()) {
+  x2 <- as.matrix(expand.grid(x1=xx, x2=xx))
+  res <- alply(x2, 1, eq2, m, .progress="text")
 
-y2 <- laply(res, "[[", "y")
+  y2 <- laply(res, "[[", "y")
 
-# Different types at equilibrium.
-z2 <- y2 > 1e-6
-type <- z2[,1] * 2 + z2[,2]
-image(xx, xx, matrix(type, nrow=length(xx)))
-abline(1, -1)
+  # Different types at equilibrium.
+  z2 <- y2 > 1e-6
+  type <- z2[,1] * 2 + z2[,2]
+  image(xx, xx, matrix(type, nrow=length(xx)))
+  abline(1, -1)
 
-# Lines from the paper -- they don't match up exactly because of
-# things like numerical issues.  Still have to get to the bottom of
-# that.
-extra <- function(x, m) {
-  p <- m$parameters$get()
-  d <- p$d
-  Y <- p$Y
-  S <- p$S
+  # Lines from the paper -- they don't match up exactly because of
+  # things like numerical issues.  Still have to get to the bottom of
+  # that.
+  extra <- function(x, m) {
+    p <- m$parameters$get()
+    d <- p$d
+    Y <- p$Y
+    S <- p$S
 
-  data.frame(B3a=d * Y[1,2] / (d * Y[1,1]) * x,
-             B3b=1 - d * Y[2,1] / (d * Y[2,2]) * (1 - x),
-             B5a=d * Y[1,2] / (Y[1,1] * (Y[1,2] * S[1] -
-               Y[2,2] * S[2] + d / (1 - x))),
-             B5b=1 - d * Y[2,1] / (Y[2,2] * (Y[2,1] * S[2] -
-               Y[1,1] * S[1] + d / x)))
+    data.frame(B3a=d * Y[1,2] / (d * Y[1,1]) * x,
+               B3b=1 - d * Y[2,1] / (d * Y[2,2]) * (1 - x),
+               B5a=d * Y[1,2] / (Y[1,1] * (Y[1,2] * S[1] -
+                 Y[2,2] * S[2] + d / (1 - x))),
+               B5b=1 - d * Y[2,1] / (Y[2,2] * (Y[2,1] * S[2] -
+                 Y[1,1] * S[1] + d / x)))
+  }
+
+  tmp <- extra(xx, m)
+
+  lines(tmp$B3a, xx)
+  lines(xx, tmp$B3b)
+  lines(tmp$B5a, xx)
+  lines(xx, tmp$B5b)
 }
-
-tmp <- extra(xx, m)
-
-lines(tmp$B3a, xx)
-lines(xx, tmp$B3b)
-lines(tmp$B5a, xx)
-lines(xx, tmp$B5b)

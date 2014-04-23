@@ -29,7 +29,7 @@ step2 <- make_step(m2$fitness, mutation, dt, mu, y_initial)
 ## Run the system for 3000 steps:
 # set.seed(1)
 res1 <- run(sys0, 3000, step1, cleanup)
-res2 <- run(sys0, 30000, step2, cleanup)
+res2 <- run(sys0, 10000, step2, cleanup)
 
 ## Plot the community over time; binned into
 cols <- grey((32:0)/32)
