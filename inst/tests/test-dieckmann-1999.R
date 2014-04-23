@@ -20,10 +20,14 @@ test_that("Model parameters", {
 test_that("Model components", {
   m <- make_dieckmann_1999()
   expect_that(names(m), equals(c("fitness", "competition",
-                                 "capacity", "parameters")))
+                                 "capacity", "equilibrium",
+                                 "single_equilibrium",
+                                 "parameters")))
   expect_that(m$fitness,     is_a("function"))
   expect_that(m$competition, is_a("function"))
   expect_that(m$capacity,    is_a("function"))
+  expect_that(m$equilibrium, is_a("function"))
+  expect_that(m$single_equilibrium, is_a("function"))
   expect_that(m$parameters,  is_a("parameters"))
 })
 
@@ -81,6 +85,7 @@ test_that("Components work", {
 ## For a single case at equilibrium density, the growth rate should be
 ## zero:
 test_that("Single species equilibrium", {
+  source("helper-Revolve.R")
   m <- make_dieckmann_1999()
   p <- m$parameters$get()
 
@@ -91,4 +96,19 @@ test_that("Single species equilibrium", {
   f <- function(x) m$fitness(x, x, m$capacity(x))
   n <- 101
   expect_that(sapply(seq(-5, 5, length.out=n), f), equals(rep(0, n)))
+
+  ## Single equlibrium
+  eq <- m$single_equilibrium()
+  expect_that(m$fitness(eq$x, eq$x, eq$y), equals(0))
+
+  ## We can also get there using the equilibrium function:
+  eq2 <- m$equilibrium(list(x=eq$x, y=1))
+  expect_that(eq2, equals(eq))
+
+  ## Multispecies equilibrium
+  eq2 <- m$equilibrium(sys_split(eq, 0.1))
+  expect_that(m$fitness(eq2$x, eq2$x, eq2$y), equals(c(0, 0)))
+
+  eq3 <- m$equilibrium(sys_split(eq, c(-.1, .2)))
+  expect_that(m$fitness(eq3$x, eq3$x, eq3$y), equals(c(0, 0)))
 })

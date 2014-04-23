@@ -335,29 +335,66 @@ run <- function(sys, n_steps, step, cleanup=identity, print_every=0) {
 }
 
 sys <- function(x, y, t=0) {
+  if (length(x) != length(y)) {
+    stop("Lengths of x and y must be the same")
+  }
   list(x=x, y=y, t=t)
+}
+
+##' Split a community into two parts, naively.
+##'
+##' This is just a little utility
+##' @title Split Community
+##' @param sys Community with components 'x' representing species
+##' traits.  Must be a single value at the moment (i.e.,
+##' single-resident, single-traits)
+##' @param dx Amount to perturb the community.  Either a scalar
+##' (traits will be symmetrically moved this amount) or a vector of
+##' length 2.
+##' @author Rich FitzJohn
+##' @export
+sys_split <- function(sys, dx) {
+  if (length(sys$x) != 1) {
+    stop("Requires single-resident, single-trait community at present")
+  }
+  if (length(dx) == 1) {
+    dx <- c(-1, 1) * dx
+  } else if (length(dx) != 2) {
+    stop("dx must be length 1 or 2")
+  }
+  sys(sys$x + dx, rep(sys$y/2, 2))
 }
 
 # Excuse the slightly odd name: this is designed to be used from
 # within functions called 'equilibrium', so we need to be able to
 # distinguish it somehow.  May tidy that up later...
-equilibrium_ <- function(dydt, x, y, method="runsteady",
+equilibrium_ <- function(dydt, pars, y, method="runsteady",
                         init_time=200, max_time=1e5) {
   method <- match.arg(method, c("runsteady", "nleqslv", "simple"))
 
   if (init_time > 0) {
-    y <- unname(lsoda_nolist(y, c(0, init_time), dydt, x)[2,-1])
+    y <- unname(lsoda_nolist(y, c(0, init_time), dydt, pars)[2,-1])
   }
 
   if (method == "runsteady") {
     dydt.deSolve <- function(...) list(dydt(...))
-    ans <- runsteady(y, dydt.deSolve, x, times=c(0, Inf), hmax=1)$y
+    ans <- runsteady(y, dydt.deSolve, pars, times=c(0, Inf), hmax=1)$y
   } else if (method == "nleqslv") {
-    ans <- nleqslv(y, function(y) dydt(0, y, x), global="none")$x
+    ans <- nleqslv(y, function(y) dydt(0, y, pars), global="none")$x
   } else if (method == "simple") {
-    ans <- unname(lsoda_nolist(y, c(init_time, max_time), dydt, x)[2,-1])
+    ans <- unname(lsoda_nolist(y, c(init_time, max_time), dydt, pars)[2,-1])
   }
   ans
+}
+
+# For models that have the sys/fitness set up.
+equilibrium_sys <- function(sys, fitness, method="runsteady",
+                            init_time=200, max_time=1e5) {
+  derivs <- function(t, y, x) {
+    fitness(x, x, y) * y
+  }
+  y <- equilibrium_(derivs, sys$x, sys$y, method, init_time, max_time)
+  sys(sys$x, y)
 }
 
 lsoda_nolist <- function(y, times, func, ...) {

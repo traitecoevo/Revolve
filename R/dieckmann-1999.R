@@ -27,9 +27,19 @@ make_dieckmann_1999 <- function(r=1, K_0=500, s2_C=0.16, s2_K=1) {
   capacity <- function(x_new)
     K_0 * exp(- x_new^2 / (2 * s2_K))
 
+  equilibrium <- function(sys, ...) {
+    equilibrium_sys(sys, fitness, ...)
+  }
+  single_equilibrium <- function() {
+    x <- 0 # fixed here
+    sys(x, capacity(x))
+  }
+
   ret <- list(fitness     = fitness,
               competition = competition,
               capacity    = capacity,
+              equilibrium = equilibrium,
+              single_equilibrium = single_equilibrium,
               parameters  = parameters)
   class(ret) <- "model" # TODO: less generic name!
   ret
