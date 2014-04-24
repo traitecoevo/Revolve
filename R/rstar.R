@@ -77,7 +77,7 @@ make_rstar <- function(matrices, r=1, m=0.25, D=0.25, S=1) {
       if (length(y) != 1) {
         stop("Only works on a single species at the moment")
       }
-      R <- single_equilibrium_R(x, y)
+      R <- single_equilibrium_R(sys(x, y))
     }
     min.p(x_new, R) - m
   }
