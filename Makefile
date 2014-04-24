@@ -15,6 +15,9 @@ check:
 	@rm -f `ls -1tr Revolve*gz | tail -n1`
 	@rm -rf Revolve.Rcheck
 
+runall:
+	make -C scripts runall
+
 test:
 	make -C inst/tests
 
