@@ -137,13 +137,18 @@ make_rstar <- function(matrices, r=1, m=0.25, D=0.25, S=1) {
     y <- D * (S - R) / (C(x) *  p(x, R))
     if (nrow(R) == 1) { # 1 resource - R is at equilibrium
     } else if (nrow(R) == 2) { # 2 resource
-      c.slope <- C(x)[2,1] / C(x)[1,1] # == (1 - x) / x
-      if (S[2] > S[1] * c.slope) { # Limited by R1, so compute R2:
-        R[2] <- S[2] - (S[1] - R[1]) * c.slope
-        y <- y[1]
-      } else { # Limited by R2, so compute R1:
-        R[1] <- S[1] - (S[2] - R[2]) / c.slope
-        y <- y[2]
+      if (any(y < 0)) { # Species has been driven extinct.
+        y <- 0 # truncate density to zero
+        R <- S # resources will stabilise back to S
+      } else {
+        c.slope <- C(x)[2,1] / C(x)[1,1] # == (1 - x) / x
+        if (S[2] > S[1] * c.slope) { # Limited by R1, so compute R2:
+          R[2] <- S[2] - (S[1] - R[1]) * c.slope
+          y <- y[1]
+        } else { # Limited by R2, so compute R1:
+          R[1] <- S[1] - (S[2] - R[2]) / c.slope
+          y <- y[2]
+        }
       }
     } else {
       stop("Not yet implemented")
@@ -154,6 +159,10 @@ make_rstar <- function(matrices, r=1, m=0.25, D=0.25, S=1) {
       #   dx <- c(dS[1], dS[2] / c.slope)
       #   i <- which.min(dx^2 + dy^2)
       #   eq <- S - c(dx[i], dy[i])
+    }
+
+    if (any(y < 0) || any(R < 0)) {
+      stop("Generated impossible values")
     }
 
     sys(x, drop(y), R=drop(R))
