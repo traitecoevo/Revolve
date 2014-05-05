@@ -142,7 +142,9 @@ make_rstar <- function(matrices, r=1, m=0.25, D=0.25, S=1) {
         R <- S # resources will stabilise back to S
       } else {
         c.slope <- C(x)[2,1] / C(x)[1,1] # == (1 - x) / x
-        if (S[2] > S[1] * c.slope) { # Limited by R1, so compute R2:
+        c.intercept <- R[2] - c.slope * R[1]
+        if (S[2] > c.intercept + S[1] * c.slope) {
+          # Limited by R1, so compute R2:
           R[2] <- S[2] - (S[1] - R[1]) * c.slope
           y <- y[1]
         } else { # Limited by R2, so compute R1:
