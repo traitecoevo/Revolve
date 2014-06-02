@@ -3,46 +3,17 @@ source("helper-Revolve.R")
 context("R star")
 
 mat2 <- rstar_matrices(rstar_mat_2, rstar_mat_2)
+S <- c(1, 1)
 
 test_that("Model parameters", {
-  m <- make_rstar(mat2)
-  defaults <- list(r=1, m=1/4, D=1/4, S=c(1, 1))
-  expect_that(names(m$parameters), equals(names(defaults)))
-  expect_that(m$parameters$get(),  equals(defaults))
+  m <- rstar(mat2, S)
+  defaults <- list(r=1, m=1/4, D=1/4)
+  expect_that(m$r, equals(defaults$r))
+  expect_that(m$m, equals(defaults$m))
+  expect_that(m$D, equals(defaults$D))
+  expect_that(m$S, equals(S))
 })
 
-test_that("Model components", {
-  m <- make_rstar(mat2)
-  expect_that(names(m), equals(c("fitness",
-                                 "equilibrium", "run", "parameters",
-                                 "n", "k", "K", "C", "p", "Rstar",
-                                 "single_equilibrium",
-                                 "single_equilibrium_R",
-                                 "run_fixed_density",
-                                 "equilibrium_R",
-                                 "derivs")))
-
-  expect_that(m$fitness,     is_a("function"))
-  expect_that(m$equilibrium, is_a("function"))
-  expect_that(m$run,         is_a("function"))
-  expect_that(m$parameters,  is_a("parameters"))
-  expect_that(m$n,           equals(NA))
-  expect_that(m$k,           is_identical_to(2L))
-  expect_that(m$K,           is_a("function"))
-  expect_that(m$C,           is_a("function"))
-  expect_that(m$p,           is_a("function"))
-  expect_that(m$Rstar,       is_a("function"))
-  expect_that(m$single_equilibrium,
-              is_a("function"))
-  expect_that(m$single_equilibrium_R,
-              is_a("function"))
-  expect_that(m$run_fixed_density,
-              is_a("function"))
-  expect_that(m$equilibrium_R,
-              is_a("function"))
-  expect_that(m$derivs,
-              is_a("function"))
-})
 
 # Matrix handling:
 
@@ -151,7 +122,7 @@ test_that("Mixed identity and constant", {
 })
 
 test_that("One resource", {
-  m <- make_rstar(rstar_matrices(rstar_mat_1, rstar_mat_1), S=1)
+  m <- rstar(rstar_matrices(rstar_mat_1, rstar_mat_1), S=S[[1]])
   sys1 <- sys(matrix(0.5, nrow=2), y=1)
 
   ## Find the equilibrium with a single species (note that this is
@@ -163,6 +134,7 @@ test_that("One resource", {
 
   ## Computed numerically:
   eq2 <- m$equilibrium(sys1)
+  eq2$R <- matrix(eq2$R)
   expect_that(eq2, equals(eq[names(eq2)]))
 })
 

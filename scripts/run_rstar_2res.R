@@ -3,12 +3,13 @@
 # for which it has, compared to its competitors, the highest
 # requirement.
 library(Revolve)
+library(testthat)
 
 ## First, trajectories in the two resource model for one and two
 ## species.
 
 mat <- rstar_matrices(rstar_mat_2_tradeoff, rstar_mat_2_tradeoff)
-m <- make_rstar(mat)
+m <- rstar(mat, 1)
 col_died <- make_transparent("grey", .2)
 
 ## One species:
@@ -17,25 +18,41 @@ col1_tr <- make_transparent(col1, .2)
 
 sys1 <- sys(matrix(0.2, nrow=2), y=1)
 
-rstar_plot(m, sys1, col=col1)
-for (i in 1:100) {
-  rstar_trajectory(m, sys1, col=col1_tr, col_died=col_died, S=runif(2))
-}
+## rstar_plot(m, sys1, col=col1)
+## for (i in 1:100) {
+##   rstar_trajectory(m, sys1, col=col1_tr, col_died=col_died, S=runif(2))
+## }
 
 ## Two species:
 sys2 <- sys(cbind(sys1$x, 0.7, deparse.level=0), y=c(1, 1))
 col2 <- c(col1, "red")
 col2_tr <- make_transparent(col2, .2)
 
-rstar_plot(m, sys2, col=col2)
-for (i in 1:100) {
-  rstar_trajectory(m, sys2, col=col2_tr, col_died=col_died, S=runif(2))
-}
+## rstar_plot(m, sys2, col=col2)
+## for (i in 1:100) {
+##   rstar_trajectory(m, sys2, col=col2_tr, col_died=col_died, S=runif(2))
+## }
 
 ## Now, displace the single species system from equilibrium and look
 ## at the new level of resources:
-m$parameters$set(list(S=c(1,1)))
+m$S <- rep(1, 1)
+
+rstar_plot(m, sys1, col=col2)
+
 eq <- m$single_equilibrium(sys1$x)
+rstar_trajectory(m, sys1, S=c(1, 1))
+
+x1 <- sys1$x
+x2 <- cbind(x1, .3, deparse.level=0)
+
+R1 <- m$single_equilibrium(x2[,1,drop=FALSE])$R # .8166, .2666
+R2 <- m$single_equilibrium(x2[,2,drop=FALSE])$R # .6714, .2333
+expect_that(m$single_equilibrium(x2)$R,
+            equals(cbind(R1, R2, deparse.level=0)))
+
+xx <- matrix(rep(seq(0, 1, by=.1), each=2), 2)
+m$single_equilibrium(xx)
+
 dy <- eq$y * 0.1
 t <- seq(0, 30, length=201)
 

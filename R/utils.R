@@ -49,10 +49,10 @@ make_parameters <- function(defaults, where=new.env()) {
   ret
 }
 
-##' @S3method names parameters
+##' @export
 names.parameters <- function(x, ...)
   x$names()
-##' @S3method names<- parameters
+##' @export
 `names<-.parameters` <- function(x, value)
   stop("Cannot set names of a parameters object")
 

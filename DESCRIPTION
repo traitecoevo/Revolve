@@ -7,4 +7,4 @@ Maintainer: Daniel S. Falster <daniel.falster@mq.edu.au>
 Description: Adaptive dynamics
 License: BSD_2_clause + file LICENSE
 Suggests: testthat
-Imports: mvtnorm, deSolve, rootSolve, nleqslv, numDeriv
+Imports: mvtnorm, deSolve, rootSolve, nleqslv, numDeriv, methods
