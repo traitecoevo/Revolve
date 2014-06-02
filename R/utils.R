@@ -490,3 +490,9 @@ mix <- function(col1, col2, p=0.5) {
   alpha <- if (all(m3[4,] == 1)) NULL else m3[4,]
   rgb(m3[1,], m3[2,], m3[3,], alpha)
 }
+
+assert_scalar <- function(x, name=deparse(substitute(x))) {
+  if (length(x) != 1) {
+    stop(sprintf("%s must be a scalar", name), call.=FALSE)
+  }
+}
