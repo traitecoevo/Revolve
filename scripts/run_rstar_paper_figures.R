@@ -48,9 +48,9 @@ sys.fig2 <- sys(NULL, rep(1, 3))
 S.fig2 <- c(6, 10, 14)
 t.fig2 <- seq(0, 100, length=201)
 
-m.fig2 <- list(make_rstar(mat.fig2a, S=S.fig2),
-               make_rstar(mat.fig2b, S=S.fig2),
-               make_rstar(mat.fig2c, S=S.fig2))
+m.fig2 <- list(rstar(mat.fig2a, S=S.fig2),
+               rstar(mat.fig2b, S=S.fig2),
+               rstar(mat.fig2c, S=S.fig2))
 res.fig2 <- lapply(m.fig2, function(m) m$run(sys.fig2, t.fig2))
 
 plot_huisman(res.fig2, ylim=c(0, 100), lty=c(1, 2, 4))
@@ -78,9 +78,9 @@ mat.fig3a <- rstar_matrices_fixed(K.fig3a, C.fig3)
 mat.fig3b <- rstar_matrices_fixed(K.fig3b, C.fig3)
 mat.fig3c <- rstar_matrices_fixed(K.fig3c, C.fig3)
 
-m.fig3 <- list(make_rstar(mat.fig3a, S=S.fig3),
-               make_rstar(mat.fig3b, S=S.fig3),
-               make_rstar(mat.fig3c, S=S.fig3))
+m.fig3 <- list(rstar(mat.fig3a, S=S.fig3),
+               rstar(mat.fig3b, S=S.fig3),
+               rstar(mat.fig3c, S=S.fig3))
 res.fig3 <- lapply(m.fig3, function(m) m$run(sys.fig3, t.fig3))
 
 # Note that this is different to the paper, because they run the last
@@ -111,8 +111,8 @@ t.fig4b <- seq(0, 3000, length=201)
 mat.fig4a <- rstar_matrices_fixed(K.fig4a, C.fig4)
 mat.fig4b <- rstar_matrices_fixed(K.fig4b, C.fig4)
 
-m.fig4 <- list(make_rstar(mat.fig4a, S=S.fig4),
-               make_rstar(mat.fig4b, S=S.fig4))
+m.fig4 <- list(rstar(mat.fig4a, S=S.fig4),
+               rstar(mat.fig4b, S=S.fig4))
 
 res.fig4 <- list(m.fig4[[1]]$run(sys.fig4, t.fig4a),
                  m.fig4[[2]]$run(sys.fig4, t.fig4b))

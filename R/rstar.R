@@ -264,9 +264,11 @@ rstar_matrices_fixed <- function(K, C) {
   # these matrices are constant with respect to both the number of
   # resources *and* the number of species.  This exists only for
   # checking against the paper.
+  k <- nrow(K)
   matrices <- list(K=function(x) K, C=function(x) C,
-                   n=ncol(K), k=nrow(K),
-                   i.K=integer(0), i.C=integer(0))
+                   n=ncol(K), k=k,
+                   i.K=integer(0), i.C=integer(0),
+                   i.R=seq_len(k))
 }
 
 

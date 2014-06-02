@@ -1,7 +1,7 @@
 library(Revolve)
 
 mat <- rstar_matrices(rstar_mat_2_tradeoff, rstar_mat_2_tradeoff)
-m <- make_rstar(mat)
+m <- rstar(mat, 1)
 
 tt <- seq(0, 300, length=301)
 sys0 <- sys(x=rbind(c(0.2, 0.7),

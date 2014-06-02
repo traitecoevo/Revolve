@@ -16,7 +16,7 @@ library(Revolve)
 
 mat <- rstar_matrices(rstar_mat_1, rstar_mat_1)
 
-m <- make_rstar(mat, S=1)
+m <- rstar(mat, S=1)
 sys0 <- sys(matrix(0.5, nrow=2), 1)
 t <- seq(0, 30, length=201)
 
@@ -64,7 +64,7 @@ abline(h=0, col="grey", lty=3)
 
 # Fitness in an empty environment:
 plot(x.mutant,
-     m$fitness(x.K, eq$x, 0, m$parameters$get()[["S"]]), type="l",
+     m$fitness(x.K, eq$x, 0, m$S), type="l",
      xlab="Trait (K)", ylab="Fitness in an empty environment")
 abline(h=0, col="grey", lty=3)
 abline(v=eq$x[1], lty=2)
