@@ -46,7 +46,7 @@ rstar$methods(pinv=function(x, g) {
 })
 
 rstar$methods(max_growth_rate=function(x, global=FALSE) {
-  if (global) rep(r, ncol(x)) else colMins(p(x, S))
+  (if (global) rep(r, ncol(x)) else min_p(x, S)) - m
 })
 
 rstar$methods(Rstar=function(x) {
@@ -113,7 +113,8 @@ rstar$methods(equilibrium_R=function(sys, ...) {
   equilibrium.  Return the equilibrium resource availability at the
   same time."
   R0 <- .self$R0_from_sys(sys)
-  modifyList(sys, list(R=equilibrium_(.self$derivs_R, sys, R0)))
+  sys$R <- equilibrium_(.self$derivs_R, sys, R0, ...)
+  sys
 })
 
 ## Special equilibria:
