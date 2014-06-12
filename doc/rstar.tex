@@ -1,0 +1,112 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{minionpro}
+\newcommand{\ud}{\mathrm{d}}
+\usepackage[hmargin=2cm,vmargin=2cm]{geometry}
+\setcounter{secnumdepth}{0}
+
+\begin{document}
+
+\section{Tilman's R$^*$ model}
+
+I'm going to break with the notation above and work with notation that is more closely aligned with that in the Tilman papers.  I'll draw the notations together afterwards.
+
+Let $N_i$ ($i = 1, \ldots, n$) be the density of the $i$th species, of which there are $n$, and let $R_j$ ($j = 1, \ldots, k$) be the abundance of the $j$th resource, of which there are $k$.
+
+The basic equations are (general form in Tilaman 1980 and 1982):
+
+\begin{equation}
+\begin{split}
+\frac{\ud N_i}{\ud t} =& N_i (f_i(R_1, \ldots, R_k) - m_i)\\
+\frac{\ud R_j}{\ud t} =& g_j(R_j) - \sum_i N_i f_i(R_1, \ldots, R_k) h_{ij}(R_1, \ldots, R_k)
+\end{split}
+\end{equation}
+%
+where $m_i$ is the mortality rate of the $i$th species, $f_i$ is the
+functional relationship between resource availability and per-capita
+population change for species $i$, $g_j$ is a function describing the
+process of resupply of resource $j$, $h_{ij}$ is a function describing
+the amount of resource $j$ required to produce each new individual of
+species $i$.
+
+Typically, $g_j$ is $D_j (S_j - R_j)$, where $D_j$ is the
+\emph{turnover rate} of the $j$th resource (and typically $D_j = D$)
+and $S_j$ is the \emph{supply rate} of resource $j$.
+
+For essential resources, which is what we will focus on first, the
+$f_i$ can be replaced with $\min_j[\rho_{ij}(R_j)]$ (following Huisman
+2001).  The function $\rho_{ij}$ is the specific growth rate on
+resource $j$ of species $i$ and is typically given by the Monod
+equation
+%
+\begin{equation*}
+  \rho_{ij}(R_j) = \frac{r_i R_j}{K_{ij} + R_j}
+\end{equation*}
+%
+where $r_i$ is the maximum specific growth rate of species $i$ and
+$K_{ij}$ is the half-saturation constant for resource $j$ of species
+$i$.  In what follows below we'll also use the inverse function
+\begin{equation*}
+  \rho_{ij}^{-1}(g_i) = \frac{K_{ij}g_i}{r_i - g_i}
+\end{equation*}
+which gives the amount of resouce $j$ required to produce the specific
+growth rate $g_i$ of species $i$.
+
+Huisman also writes the $h_{ij}$ function as the constant $C_{ij}$,
+which is the rate of consumption of the $j$th resource by species
+$i$.
+
+\subsection{Things we need}
+
+\subsubsection{Maximum growth rate}
+
+There are a couple of different interpretations here.  First there is
+the unconditional maximum growth rate, which is $r_i$ --- this is the
+highest growth rate that is possible under any situation given htat
+$R_j/(K_{ij} + R_{j})$ has a maximum of 1 as $R_j \to \infty$ (if we
+had a function $f_i$ that summed the per-resource components we'd need
+to be careful here).
+
+The other interpretation is to use maximum resource level that a
+species might encounter, which will be $S_j$, so the maximum growth
+rate becomes
+
+\begin{equation*}
+\min_j\left[\rho_{ij}(S_j)\right] =
+\min_j\left[\frac{r_i S_j}{K_{ij} + S_{j}}\right]
+\end{equation*}
+
+\subsubsection{Carrying capacity}
+
+I'm defining this as the population size when the species is in a
+monoculture (so $N_l = 0$ for $l \neq i$).  If $j$ is the limiting
+resource (i.e. $\min_l[\rho_{il}] = \rho_{ij}$), then because $\ud N_i / \ud
+t = 0$
+
+\begin{equation*}
+  \rho_{ij}(R_j) = m_i \quad\Rightarrow\quad
+  \hat R_{ij} = \rho_{ij}^{-1}(m_i) = \frac{m_i K_{ij}}{r_i - m_i}
+\end{equation*}
+
+We don't actually need this to get the equilibrium population size.
+Because at equilibrium $m_i = f_i(R_1, \ldots, R_k)$ and $\ud R_j /
+\ud t = 0$, and because we're interested in the case where only a
+single species is present
+
+\begin{equation*}
+  g_j(R_j) = N_i m_i h_{ij}(R_1, \ldots, R_k) \quad\Rightarrow\quad
+  N_i = \frac{g_j(R_j)}{m_i h_{ij}(R_1, \ldots, R_k)}
+\end{equation*}
+
+For our specific version of the model, this is
+\begin{equation*}
+  \hat N_i = K_i = \frac{D_j (S_j - R_j)}{m_i C_{ij}}
+\end{equation*}
+
+(note that this approach does not give us the equilibrium values for
+all resources.  Looking at the code there is a bit of care required
+here).
+
+
+
+\end{document}
+
