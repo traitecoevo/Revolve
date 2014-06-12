@@ -46,7 +46,7 @@ rstar$methods(pinv=function(x, g) {
 })
 
 rstar$methods(max_growth_rate=function(x, global=FALSE) {
-  (if (global) rep(r, ncol(x)) else min_p(x, S)) - m
+  (if (global) rep(r, ncol(x)) else .self$min_p(x, S)) - m
 })
 
 rstar$methods(Rstar=function(x) {
