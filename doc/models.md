@@ -165,13 +165,13 @@ The following algorithm is adapted from @ito_new_2007:
 
 3.  \label{ms:extinct} Check whether $\bar{y}_{i} < \epsilon$ $\forall i$; if so, delete phenotype $x_i$ and decrease $N$ accordingly. Return to step \ref{ms:Restart}.
 
-4.  \label{ms:Weight} Calculate the rate $w_i =\mu_i \bar{y}_i(x) $ for the emergence of a mutant from phenotype $x_i$, the immigration rate $w_{N+1} =I$, and the total mutation rate $w=\sum_{i=1}^{N+1} w_i$.
+4.  \label{ms:Weight} Calculate the rate $w_i =\mu_i \bar{y}_i(x)$ for the emergence of a mutant from phenotype $x_i$, the immigration rate $w_{N+1} =I$, and the total mutation rate $w=\sum_{i=1}^{N+1} w_i$.
 
 5.  \label{ms:newMutant} Choose lineage $i$ with probability $w_i/w$.
 
 6.  Choose a new phenotype $x_i^\prime$ according to the mutation probability density $M(x_i^\prime, x_{i}, \sigma(x_{i}))$ if $i \in (1,N)$, or in the case of immigration, $M_I(x_i^\prime)$. Update time $t$ by adding $\Delta t =-(1/w)\ln p$, where $0\leq p \leq 1$ is a uniformly distributed random number.
 
-7.  Calculate the invasion fitness of the new phenotype and check if it can invade. Invasion requires $f >0 $ -- however, even if $f$ is positive the mutant may fail because of stochastic demographic effects.
+7.  Calculate the invasion fitness of the new phenotype and check if it can invade. Invasion requires $f >0$ -- however, even if $f$ is positive the mutant may fail because of stochastic demographic effects.
     * The probability $p$ the mutant survives is calculated as a function of $f$. For models with continuous-time birth-death process, this probability also depends on birth rate $p = max(f,0)/b$ [@dieckmann_dynamical_1996]. Unfortunately there is no easy analogue in structured populations. As a rough approximation, $p = \max(\log(B),0)/log(R)$, where $R$ and $B$ are, respectively, the expected number of offspring and the expected number of offspring reaching maturity produced by an individual reaching maturity.
     * Choose a uniformly distributed random number $0\leq p_r \leq 1$. If $p_r > p$ the mutant fails to invade, return to step \label{ms:newMutant}.
 
